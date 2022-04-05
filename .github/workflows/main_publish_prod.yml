@@ -1,0 +1,21 @@
+on: 'workflow_dispatch'
+name: Manual - PROD - Publish
+jobs:
+  publish_prod:
+    name: Manual - PROD - Publish
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.17.2
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Build Tree
+        run: ./scripts/cicd/build_tree.sh
+      - name: Publish
+        env:
+          SECRET_NPM_TOKEN: ${{secrets.NPM_PUBLISH_TOKEN}}
+        run: ./scripts/cicd/publish.sh
