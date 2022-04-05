@@ -44,7 +44,15 @@ Everyauth consists of Express middleware, a management CLI, and a [Fusebit](http
 
 ## Contents
 
-TODO
+[Getting started](#getting-started)  
+[Supported services](#supported-services)  
+[Concepts](#concepts)  
+[Authentication](#authentication)  
+[Identity mapping](#identity-mapping)  
+[Service configuration](#service-configuration)  
+[Reference: CLI](#everyauth-cli-reference)  
+[Reference: middleware](#everyauth-express-middleware-reference)  
+[FAQ](#faq)  
 
 ## Getting started
 
@@ -120,24 +128,24 @@ Congratulations, you are done! To test the end-to-end flow, navigate your browse
 
 Everyauth supports authorization to the following APIs out of the box:
 
-[Asana](docs/asana.md)
-[Atlassian](docs/atlassian.md)
-[Discord](docs/discord.md)
-[Github Application](docs/githubapp.md)
-[Github API](docs/githuboauth.md)
-[GitLab](docs/gitlab.md)
-[Google API](docs/google.md)
-[Hubspot](docs/hubspot.md)
-[Linear](docs/linear.md)
-[LinkedIn](docs/linkedin.md)
-[PagerDuty](docs/pagerduty.md)
-[Quickbooks](docs/quickbooks-online.md)
-[Reddit](docs/reddit.md)
-[Salesforce](docs/sfdc.md)
-[Slack](docs/slack.md)
-[StackOverflow](docs/stackoverflow.md)
-[Twitter](docs/twitter.md)
-[Zoom](docs/zoom.md)
+[Asana](docs/asana.md)  
+[Atlassian](docs/atlassian.md)  
+[Discord](docs/discord.md)  
+[Github Application](docs/githubapp.md)  
+[Github API](docs/githuboauth.md)  
+[GitLab](docs/gitlab.md)  
+[Google API](docs/google.md)  
+[Hubspot](docs/hubspot.md)  
+[Linear](docs/linear.md)  
+[LinkedIn](docs/linkedin.md)  
+[PagerDuty](docs/pagerduty.md)  
+[Quickbooks](docs/quickbooks-online.md)  
+[Reddit](docs/reddit.md)  
+[Salesforce](docs/sfdc.md)  
+[Slack](docs/slack.md)  
+[StackOverflow](docs/stackoverflow.md)  
+[Twitter](docs/twitter.md)  
+[Zoom](docs/zoom.md)  
 
 Don't see the service you are looking for? We are constantly adding support for new services. [Check if yours is in the backlog or file a request for one](https://github.com/fusebit/everyauth-express/issues).
 
@@ -147,7 +155,7 @@ Don't see the service you are looking for? We are constantly adding support for 
 - **Tenant** - A large multi-user system uses a concept of a _tenant_ to identify the larger organization a particular _user_ may belong to. For example, your _user_ might be Janet, but the _tenant_ might be Sonicity, a large multinational corporation. Generally, _users_ authenticate on behalf of _tenants_, though for single-user environments the _user_ and the _tenant_ might be effectively the same.
 - **Service** - A service is a remote SaaS your users are already using, upon which you would like to act on their behalf. For example, your application may modify a HubSpot record, send a message to Slack, or update a Salesforce company on behalf of your application users.
 - **Identity** - The necessary tokens, refresh tokens, or other secrets that are used to authorize API calls to a _service_ on behalf of a _user_.
-- **Tag** - A key-value pair, for example ("userId", "user-123"). A number of tags can be associated with an _identity_. Everyauth enables you look up an _identity_ or _identities_ that are associated wth a specific set of _tags_.
+- **Tag** - A key-value pair, for example ("userId", "user-123"). A number of tags can be associated with an _identity_. Everyauth enables you to look up an _identity_ or _identities_ that are associated wth a specific set of _tags_.
 
 ## Authentication
 
