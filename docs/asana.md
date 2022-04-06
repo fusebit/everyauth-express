@@ -1,6 +1,6 @@
 # Asana
 
-EveryAuth is the easiest way to call Asana APIs from your app without learning OAuth. Make sure to follow [EveryAuth setup instructions](../README.md) before adding Asana support to your app.
+EveryAuth is the easiest way to call Asana APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Asana support to your app.
 
 ## Authorize access to Asana
 
@@ -18,7 +18,7 @@ router.use(
   })
 );
 
-router.use("/asana/finished", (req, res) => {
+router.get("/asana/finished", (req, res) => {
   res.send("Thank you for authorizing access to Asana!");
 });
 ```
@@ -27,15 +27,22 @@ When you want users or your app to authorize access to Asana APIs so that your a
 
 ## Call Asana APIs
 
-After a user has authorized your app to call Asana APIs, you can use any Node.js SDK to make the call. EveryAuth recommends you use the [asana](https://www.npmjs.com/package/asana) npm module:
+After a user has authorized your app to call Asana APIs, you can use any Node.js SDK to make the call. EveryAuth recommends you use the [asana](https://www.npmjs.com/package/asana) npm module.
+
+First, resolve the identifier of the user of your app to Asana credentials:
 
 ```javascript
 import everyauth from "@fusebit/everyauth-express";
-import asana from "asana";
 
 // Get Asana credentials for a specific user of your app
 const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("asana", userId);
+```
+
+Then, instantiate the Asana client and make the API calls you want:
+
+```javascript
+import asana from "asana";
 
 // Create Asana SDK
 const asanaClient = asana.Client.create().useAccessToken(
@@ -48,7 +55,9 @@ const me = await asanaClient.users.me();
 
 ## Configure Asana service
 
-To use your own OAuth client with Everyauth, fist [create an OAuth application in Asana](https://developers.asana.com/docs/register-an-application), and then use the EveyAuth CLI to configure the Asana service:
+The shared Asana OAuth client EveryAuth provides supports basic permissions that allow you to call Asana APIs right out of the box. 
+
+If you need to address more advanced scenarios, you need to create and configure your own OAuth client with Everyauth. First [create an OAuth application in Asana](https://developers.asana.com/docs/register-an-application), and then use the EveyAuth CLI to configure the Asana service to use it:
 
 ```bash
 everyauth service set asana \
