@@ -1,6 +1,18 @@
-interface IEveryAuthCredential {}
+import * as superagent from 'superagent';
 
-type IEveryAuthTagSearchSet = Record<string, string | number | undefined | null>;
+import { getAuthedProfile } from './profile';
+
+interface IEveryAuthCredential {
+  id: string;
+  tags: IEveryAuthTagSet;
+}
+
+interface IEveryAuthCredentialSearch {
+  items: IEveryAuthCredential[];
+  next?: string;
+}
+
+type IEveryAuthTagSet = Record<string, string | undefined | null>;
 
 interface IEveryAuthSearchOptions {
   next?: string;
@@ -9,43 +21,106 @@ interface IEveryAuthSearchOptions {
 
 export const getIdentity = async (
   serviceId: string,
-  credentialOrUserIdOrAttributes: string | IEveryAuthTagSearchSet
+  credentialOrUserIdOrAttributes: string | IEveryAuthTagSet
 ): Promise<IEveryAuthCredential> => {
+  let identityId: string;
+
   // Determine which lookup mode we're in:
-  //   * credential (aka idn-123)
-  //   * userid (any other string), or
-  //    - call getIdentityByUser
-  //    - throw if > 1
-  //   * tag search record (which will need to be translated to a wire)
-  //    - call getIdentityByTags
-  //    - throw if > 1
-  // getIdentityById()
-  return '';
+  if (typeof credentialOrUserIdOrAttributes == 'string') {
+    if (credentialOrUserIdOrAttributes.startsWith('idn-')) {
+      identityId = credentialOrUserIdOrAttributes;
+    } else {
+      const identities = await getIdentitiesByTags(serviceId, { USER_KEY: credentialOrUserIdOrAttributes });
+      if (identities.items.length > 0) {
+        throw new Error('Too many matches');
+      }
+      identityId = identities.items[0].id;
+    }
+  } else {
+    const identities = await getIdentitiesByTags(serviceId, credentialOrUserIdOrAttributes);
+    if (identities.items.length > 0) {
+      throw new Error('Too many matches');
+    }
+    identityId = identities.items[0].id;
+  }
+
+  const creds = await getIdentityById(serviceId, identityId);
+  return creds;
 };
 
 export const getIdentities = async (
   serviceId: string,
-  attributes: IEveryAuthTagSearchSet,
+  attributes: IEveryAuthTagSet,
   options?: IEveryAuthSearchOptions
-): Promise<IEveryAuthCredential> => {
-  // call getIdentityByTags
-  return '';
+): Promise<IEveryAuthCredentialSearch> => {
+  const identities = await getIdentitiesByTags(serviceId, attributes, options);
+
+  // Sanitize the return set.
+  return {
+    items: identities.items.map((identity) => ({ id: identity.id, tags: identity.tags })),
+    next: identities.next,
+  };
 };
 
-const getIdentityById = async (serviceId: string, identityId: string): Promise<IEveryAuthCredential> => {
-  // GET /connector/:serviceId/api/token/:identityId
+export const getIdentityById = async (serviceId: string, identityId: string): Promise<IEveryAuthCredential> => {
+  const profile = await getAuthedProfile();
+  const tokenPath = `/api/${identityId}/token`;
+  const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
+  const tokenResponse = await superagent.get(`${baseUrl}${tokenPath}`).set('Authorization', `Bearer ${profile.token}`);
+
+  const connectorToken = tokenResponse.body;
+  const isEmpty = !connectorToken || Object.keys(connectorToken).length === 0;
+
+  if (isEmpty) {
+    throw new Error(`Cannot find Identity '${identityId}'`);
+  }
+
+  return connectorToken;
 };
 
-const getIdentityByUser = async (serviceId: string, userId: string): Promise<IEveryAuthCredential> => {
-  // getIdentityByTags(serviceId, { 'fusebit.tenantId': :userId});
-  // Throw if > 1
-  // GET /connector/:serviceId/api/token/:identityId
+export const getIdentityByUser = async (serviceId: string, userId: string): Promise<IEveryAuthCredential> => {
+  const result = await getIdentitiesByTags(serviceId, { USER_KEY: userId });
+
+  if (result.items.length != 1) {
+    throw new Error(`Unable to find User '${userId}'`);
+  }
+
+  return getIdentityById(serviceId, result.items[0].id);
 };
 
-const getIdentityByTags = async (
+const getIdentitiesByTags = async (
   serviceId: string,
-  tags: IEveryAuthTagSearchSet,
-  options: IEveryAuthSearchOptions
-): Promise<IEveryAuthCredential> => {
-  // GET /connector/:serviceId/identity/?tag=fusebit.tenantId=:userId
+  tags: IEveryAuthTagSet,
+  options?: IEveryAuthSearchOptions
+): Promise<IEveryAuthCredentialSearch> => {
+  // Convert the IEveryAuthTagSet into the right query parameters
+  const params = new URLSearchParams();
+  Object.entries(tags).forEach(([key, value]) => {
+    if (value === null) {
+      value = 'null';
+    } else if (value === undefined) {
+      value = '';
+    } else {
+      value = encodeURIComponent(value);
+    }
+    params.append('tag', `${encodeURIComponent(key)}=${value}`);
+  });
+
+  if (options) {
+    if (options.next) {
+      params.set('next', options.next);
+    }
+
+    if (options.pageSize) {
+      params.set('pageSize', `${options.pageSize}`);
+    }
+  }
+
+  const profile = await getAuthedProfile();
+  const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
+  const response = await superagent
+    .get(`${baseUrl}/identity/?${params.toString()}`)
+    .set('Authorization', `Bearer ${profile.token}`);
+
+  return response.body;
 };
