@@ -12,7 +12,7 @@ import everyauth from "@fusebit/everyauth-express";
 // Add support for users to authorize access to Asana APIs
 router.use(
   "/asana",
-  everyauth.authorize("slack", {
+  everyauth.authorize("asana", {
     finishedUrl: "/asana/finished",
     mapToUserId: async (req) => "user-123", // req.user.id in production
   })
