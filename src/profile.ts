@@ -5,6 +5,7 @@ import * as jwt from 'jsonwebtoken';
 
 const JWT_CACHE_MARGIN = 1000 * 60 * 5; // 5 minute margin before refreshing the key.
 const settingsName = 'settings.json';
+const keyDir = 'keys';
 const publicKeyFileName = 'pub';
 const privateKeyFileName = 'pri';
 const jwtAlgorithm = 'RS256';
@@ -19,7 +20,7 @@ interface IProfilePki {
   publicKey: string;
 }
 
-interface IProfile {
+export interface IProfile {
   created: string;
   updated: string;
   account: string;
@@ -41,26 +42,26 @@ const cachedJwt: {
   token: string;
 } = { expiresAt: 0, token: '' };
 
-const loadProfile = async (profileName?: string): Promise<IProfile> => {
+export const loadProfile = async (profileName?: string): Promise<IProfile> => {
   if (cachedFoundProfile) {
     return cachedFoundProfile;
   }
 
-  // Look for the EVERYAUTH_ACCOUNT_JSON object
-  if (process.env.EVERYAUTH_ACCOUNT_JSON) {
-    return (cachedFoundProfile = JSON.parse(process.env.EVERYAUTH_ACCOUNT_JSON));
+  // Look for the EVERYAUTH_PROFILE_JSON object
+  if (process.env.EVERYAUTH_PROFILE_JSON) {
+    return (cachedFoundProfile = JSON.parse(process.env.EVERYAUTH_PROFILE_JSON));
   }
 
-  // Look for the EVERYAUTH_ACCOUNT_PATH to load a specific directory with a settings.json file in it
-  if (process.env.EVERYAUTH_ACCOUNT_PATH) {
-    return (cachedFoundProfile = await loadProfileFromDisk(process.env.EVERYAUTH_ACCOUNT_PATH, profileName));
+  // Look for the EVERYAUTH_PROFILE_PATH to load a specific directory with a settings.json file in it
+  if (process.env.EVERYAUTH_PROFILE_PATH) {
+    return (cachedFoundProfile = await loadProfileFromDisk(process.env.EVERYAUTH_PROFILE_PATH, profileName));
   }
 
   // Recursively look upwards for a `.fusebit` directory
   let settingsDir = '.';
   while (settingsDir != '/') {
     try {
-      cachedFoundProfile = await loadProfileFromDisk(settingsDir, profileName);
+      cachedFoundProfile = await loadProfileFromDisk(path.join(settingsDir, '.fusebit'), profileName);
       return cachedFoundProfile;
     } catch (_) {
       // Ignore filesystem errors and try again
@@ -68,7 +69,7 @@ const loadProfile = async (profileName?: string): Promise<IProfile> => {
     settingsDir = path.resolve(path.join(settingsDir, '..'));
   }
 
-  throw new Error(`No ${settingsDir}/${settingsName} found in this tree.`);
+  throw new Error(`No ${settingsName} found in this tree.`);
 };
 
 const loadProfileFromDisk = async (settingsDir: string, profileName?: string): Promise<IProfile> => {
@@ -77,9 +78,15 @@ const loadProfileFromDisk = async (settingsDir: string, profileName?: string): P
 
   const profile = settings.profiles[profileName || settings.defaults.profile];
   // eslint-disable-next-line security/detect-non-literal-fs-filename
-  const publicKey = fs.readFileSync(path.join(settingsDir, profile.keypair, profile.kid, publicKeyFileName), 'utf8');
+  const publicKey = fs.readFileSync(
+    path.join(settingsDir, keyDir, profile.keyPair, profile.kid, publicKeyFileName),
+    'utf8'
+  );
   // eslint-disable-next-line security/detect-non-literal-fs-filename
-  const privateKey = fs.readFileSync(path.join(settingsDir, profile.keypair, profile.kid, privateKeyFileName), 'utf8');
+  const privateKey = fs.readFileSync(
+    path.join(settingsDir, keyDir, profile.keyPair, profile.kid, privateKeyFileName),
+    'utf8'
+  );
 
   profile.pki = {
     algorithm: jwtAlgorithm,

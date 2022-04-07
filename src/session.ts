@@ -1,34 +1,39 @@
 import * as superagent from 'superagent';
-import * as express from 'express';
-import { getAuthedProfile } from './profile';
+import { getAuthedProfile, IProfile } from './profile';
 
 const COMMIT_URL_SUFFIX = '/commit';
 
-export const getHostedBaseUrl = (req: express.Request): string => req.baseUrl;
+const META_INTEGRATION_ID = 'everyauth';
+
+const getSessionUrl = (profile: IProfile) =>
+  `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/integration/${META_INTEGRATION_ID}`;
 
 export const start = async (serviceId: string, userId: string, hostedBaseUrl: string): Promise<string> => {
   const profile = await getAuthedProfile();
-  const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
+  const baseUrl = getSessionUrl(profile);
+
+  const payload = {
+    redirectUrl: `${hostedBaseUrl}${COMMIT_URL_SUFFIX}`,
+    tags: {
+      'fusebit.tenantId': userId,
+    },
+    components: [serviceId],
+  };
 
   const response = await superagent
     .post(`${baseUrl}/session`)
     .set('Authorization', `Bearer ${profile.token}`)
     .set('Content-Type', 'application/json')
-    .send({
-      redirectUrl: `${hostedBaseUrl}${COMMIT_URL_SUFFIX}`,
-      tags: {
-        'fusebit.tenantId': userId,
-      },
-    });
+    .send(payload);
 
   const sessionId = response.body.id;
 
   return `${baseUrl}/session/${sessionId}/start`;
 };
 
-export const commit = async (serviceId: string, sessionId: string) => {
+export const commit = async (sessionId: string) => {
   const profile = await getAuthedProfile();
-  const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
+  const baseUrl = getSessionUrl(profile);
 
   // Start the commit process
   let result = await superagent
