@@ -2,18 +2,24 @@ import * as superagent from 'superagent';
 
 import { getAuthedProfile } from './profile';
 
+import * as provider from './provider';
+
 const USER_KEY = 'fusebit.tenantId';
 
-interface IEveryAuthCredential {
+interface IEveryAuthIdentity {
   id: string;
   tags: IEveryAuthTagSet;
   dateModified: string;
-  access_token?: string;
 }
 
-interface IEveryAuthCredentialSearch {
-  items: IEveryAuthCredential[];
+interface IEveryAuthIdentitySearch {
+  items: IEveryAuthIdentity[];
   next?: string;
+}
+
+interface IEveryAuthCredential {
+  native: provider.INative;
+  accessToken: string;
 }
 
 type IEveryAuthTagSet = Record<string, string | undefined | null>;
@@ -49,14 +55,14 @@ export const getIdentity = async (
   }
 
   const creds = await getIdentityById(serviceId, identityId);
-  return creds;
+  return (provider as any)[serviceId].normalize(creds);
 };
 
 export const getIdentities = async (
   serviceId: string,
   attributes: IEveryAuthTagSet,
   options?: IEveryAuthSearchOptions
-): Promise<IEveryAuthCredentialSearch> => {
+): Promise<IEveryAuthIdentitySearch> => {
   const identities = await getIdentitiesByTags(serviceId, attributes, options);
 
   // Sanitize the return set.
@@ -70,7 +76,7 @@ export const getIdentities = async (
   };
 };
 
-export const getIdentityById = async (serviceId: string, identityId: string): Promise<IEveryAuthCredential> => {
+export const getIdentityById = async (serviceId: string, identityId: string): Promise<IEveryAuthIdentity> => {
   const profile = await getAuthedProfile();
   const tokenPath = `/api/${identityId}/token`;
   const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
@@ -86,7 +92,7 @@ export const getIdentityById = async (serviceId: string, identityId: string): Pr
   return connectorToken;
 };
 
-export const getIdentityByUser = async (serviceId: string, userId: string): Promise<IEveryAuthCredential> => {
+export const getIdentityByUser = async (serviceId: string, userId: string): Promise<IEveryAuthIdentity> => {
   const result = await getIdentitiesByTags(serviceId, { [USER_KEY]: userId });
 
   if (result.items.length != 1) {
@@ -100,7 +106,7 @@ const getIdentitiesByTags = async (
   serviceId: string,
   tags: IEveryAuthTagSet,
   options?: IEveryAuthSearchOptions
-): Promise<IEveryAuthCredentialSearch> => {
+): Promise<IEveryAuthIdentitySearch> => {
   // Convert the IEveryAuthTagSet into the right query parameters
   const params = new URLSearchParams();
   Object.entries(tags).forEach(([key, value]) => {

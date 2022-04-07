@@ -86,7 +86,7 @@ describe('Manual Test Cases', () => {
 
   test('Manual: Exercise getIdentity(userId)', async () => {
     const userCredentials = await everyauth.getIdentity('slack', 'user-1');
-    const slack = new WebClient(userCredentials.access_token);
+    const slack = new WebClient(userCredentials.accessToken);
     const result = await slack.chat.postMessage({
       text: 'Hello World from EveryAuth',
       channel: '#demo',
@@ -94,7 +94,7 @@ describe('Manual Test Cases', () => {
     expect(result.ok).toBe(true);
   });
 
-  test('Manual: Exercise getIdentities, and getIdentity(identityId)', async () => {
+  test.only('Manual: Exercise getIdentities, and getIdentity(identityId)', async () => {
     const users = await everyauth.getIdentities('slack', { ['fusebit.tenantId']: 'user-1' });
 
     let n = 0;
@@ -102,7 +102,7 @@ describe('Manual Test Cases', () => {
     await Promise.all(
       users.items.map(async (user) => {
         const userIdentity = await everyauth.getIdentity('slack', user.id);
-        const slack = new WebClient(userIdentity.access_token);
+        const slack = new WebClient(userIdentity.accessToken);
         const result = await slack.chat.postMessage({
           text: `Hello World from EveryAuth: ${n++}`,
           channel: '#demo',
