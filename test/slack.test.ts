@@ -42,7 +42,7 @@ const startServer = async (): Promise<IServer> => {
   return { app, listener, port, close: async () => httpTerminator.terminate() };
 };
 
-const runTest = async (onSuccess?: (req: express.Request, res: express.Response) => Promise<void>) => {
+const runTest = async () => {
   const server = await startServer();
 
   const [completeResolve, completePromise] = getResolve<void>();
@@ -58,11 +58,7 @@ const runTest = async (onSuccess?: (req: express.Request, res: express.Response)
   // Let's do something interesting on completion!
   server.app.get('/complete', async (req: express.Request, res: express.Response) => {
     result = req.query.error ? (req.query.error as string) : 'success';
-    if (req.query.error || !onSuccess) {
-      res.send(result);
-    } else {
-      await onSuccess(req, res);
-    }
+    res.send(result);
     completeResolve();
   });
 
