@@ -23,13 +23,13 @@ router.get("/asana/finished", (req, res) => {
 });
 ```
 
-When you want users or your app to authorize access to Asana APIs so that your app can call Asana APIs on their behalf, redirect their browser to the `/asana` endpoint above.
+When you want users of your app to authorize access to Asana so that your app can call Asana APIs on their behalf, redirect their browser to the `/asana` endpoint above.
 
 ## Call Asana APIs
 
 After a user has authorized your app to call Asana APIs, you can use any Node.js SDK to make the call. EveryAuth recommends you use the [asana](https://www.npmjs.com/package/asana) npm module.
 
-First, resolve the identifier of the user of your app to Asana credentials:
+First, use EveryAuth to resolve the identifier of the user of your app to Asana credentials:
 
 ```javascript
 import everyauth from "@fusebit/everyauth-express";
@@ -55,9 +55,9 @@ const me = await asanaClient.users.me();
 
 ## Configure Asana service
 
-The shared Asana OAuth client EveryAuth provides supports basic permissions that allow you to call Asana APIs right out of the box. 
+The shared Asana OAuth client that EveryAuth provides out of the box supports basic permissions that allow you to call Asana APIs right away. 
 
-If you need to address more advanced scenarios, you need to create and configure your own OAuth client with Everyauth. First [create an OAuth application in Asana](https://developers.asana.com/docs/register-an-application), and then use the EveyAuth CLI to configure the Asana service to use it:
+If you need to address more advanced scenarios, you need to create your own OAuth client and configure EveryAuth to use it. First [create an OAuth application in Asana](https://developers.asana.com/docs/register-an-application), and then use the EveyAuth CLI to configure the Asana service to use it:
 
 ```bash
 everyauth service set asana \
