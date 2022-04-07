@@ -136,14 +136,12 @@ EveryAuth supports authorization to the following APIs out of the box:
 [Google API](docs/google.md)  
 [Hubspot](docs/hubspot.md)  
 [Linear](docs/linear.md)  
-[LinkedIn](docs/linkedin.md)  
 [PagerDuty](docs/pagerduty.md)  
-[Quickbooks](docs/quickbooks-online.md)  
+[QuickBooks](docs/quickbooks-online.md)  
 [Reddit](docs/reddit.md)  
 [Salesforce](docs/sfdc.md)  
 [Slack](docs/slack.md)  
 [StackOverflow](docs/stackoverflow.md)  
-[Twitter](docs/twitter.md)  
 [Zoom](docs/zoom.md)
 
 Don't see the service you are looking for? We are constantly adding support for new services. [Check if yours is in the backlog or file a request for one](https://github.com/fusebit/everyauth-express/issues).
