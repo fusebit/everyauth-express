@@ -1,4 +1,3 @@
-import * as path from 'path';
 import * as everyauth from '../src';
 
 test('Load a profile by walking upwards, looking for a .fusebit directory', async () => {

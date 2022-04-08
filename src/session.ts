@@ -71,7 +71,9 @@ export const commit = async (serviceId: string, sessionId: string): Promise<{ id
     .set('User-Agent', EveryAuthVersion)
     .set('Authorization', `Bearer ${profile.token}`);
 
+  // eslint-disable-next-line security/detect-object-injection
   const identityId = install.body.data[serviceId].entityId;
+  // eslint-disable-next-line security/detect-object-injection
   const userId = result.body.tags[USER_TAG];
 
   debug(`${userId}: created identity ${identityId}`);

@@ -85,6 +85,7 @@ export const getIdentity = async (
   }
 
   const creds = await getIdentityById(serviceId, identityId);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
   return (provider as any)[serviceId].normalize(creds);
 };
 

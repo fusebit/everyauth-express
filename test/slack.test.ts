@@ -15,7 +15,8 @@ interface IServer {
 }
 
 const getResolve = <T>(): [(result: T) => void, Promise<T>] => {
-  let savedResolve: (val: T) => void = (val) => {};
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  let savedResolve: (val: T) => void = () => {};
   const tmpPromise = new Promise<T>((resolve) => (savedResolve = resolve));
   return [savedResolve, tmpPromise];
 };
@@ -23,12 +24,13 @@ const getResolve = <T>(): [(result: T) => void, Promise<T>] => {
 const startServer = async (): Promise<IServer> => {
   const app = express();
 
-  app.get('/', (req, res) => {
+  app.get('/', (_, res) => {
     res.send('Hello World!');
   });
 
   const [portResolve, portPromise] = getResolve<number>();
   const getPort = () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     portResolve((listener.address() as any).port);
   };
   const listener: http.Server = app.listen(0, getPort);
@@ -50,10 +52,7 @@ const runTest = async () => {
   let result = '';
 
   // Add the EveryAuth middleware
-  server.app.use(
-    '/slack',
-    everyauth.authorize('slack', { finishedUrl: '/complete', mapToUserId: (req: express.Request) => 'user-1' })
-  );
+  server.app.use('/slack', everyauth.authorize('slack', { finishedUrl: '/complete', mapToUserId: () => 'user-1' }));
 
   // Let's do something interesting on completion!
   server.app.get('/complete', async (req: express.Request, res: express.Response) => {
@@ -73,12 +72,14 @@ const runTest = async () => {
 
 describe('Manual Test Cases', () => {
   test('Manual: Validate that the express middleware works for Slack', async () => {
+    // eslint-disable-next-line no-console
     console.log('Accept this Slack authorization');
     const result = await runTest();
     expect(result).toBe('success');
   }, 180000);
 
   test('Manual: Validate that the express middleware receives errors on cancels', async () => {
+    // eslint-disable-next-line no-console
     console.log('Decline this Slack authorization');
     const result = await runTest();
     expect(result).toBe('access_denied');
