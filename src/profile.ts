@@ -45,6 +45,16 @@ export const cachedJwt: {
   token: string;
 } = { expiresAt: 0, token: '' };
 
+/**
+ * Supply a profile to use directly, instead of using the automatic discovery options.
+ *
+ * @param profile A profile object, created from a previously initialized profile.  Includes the private and
+ * public keys used to authenticate with the remote service.
+ */
+export const config = async (profile: IProfile) => {
+  cachedFoundProfile = profile;
+};
+
 export const loadProfile = async (profileName?: string): Promise<IProfile> => {
   if (cachedFoundProfile) {
     return cachedFoundProfile;
