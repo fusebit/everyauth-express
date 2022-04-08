@@ -52,11 +52,15 @@ const runTest = async (options?: { deny?: boolean } & Partial<everyauth.IEveryAu
   let result = '';
 
   server.app.get('/allow', (req: express.Request, res: express.Response) => {
-    res.send('<html><body style="background-color:#00c100"><br/>ACCEPT<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>');
+    res.send(
+      '<html><body style="background-color:#00c100"><br/>ACCEPT<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>'
+    );
   });
 
   server.app.get('/reject', (req: express.Request, res: express.Response) => {
-    res.send('<html><body style="background-color:#c10000"><br/>REJECT<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>');
+    res.send(
+      '<html><body style="background-color:#c10000"><br/>REJECT<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>'
+    );
   });
 
   // Add the EveryAuth middleware
@@ -86,7 +90,9 @@ describe('Manual Test Cases', () => {
     let next: string | undefined = undefined;
 
     do {
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       const identities: any = await everyauth.getIdentities('slack', { userId: 'user-1' }, { next });
+      //eslint-disable-next-line @typescript-eslint/no-explicit-any
       await Promise.all(identities.items.map((identity: any) => everyauth.deleteIdentity('slack', identity.id)));
       next = identities.next;
     } while (next);
