@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "Everyauth is the easiest way to call third party APIs from your app without learning OAuth.",
   "main": "index.js",
-  "files": ["libc/**/*"],
+  "files": [
+    "libc/**/*"
+  ],
   "scripts": {
     "build": "tsc -b",
     "test": "jest",
