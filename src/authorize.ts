@@ -4,6 +4,9 @@ import * as session from './session';
 
 import debugModule from 'debug';
 const debug = debugModule('everyauth:authorize');
+const dbg = ({ userId, tenantId }: { userId?: string; tenantId?: string }, msg: string) => {
+  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: ${msg}`);
+};
 
 export interface IEveryAuthContext {
   finishedUrl: string /** The url which the service was configured to use. */;
@@ -99,9 +102,9 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
  * @return An Express Router
  */
 export const authorize = (serviceId: string, options: IEveryAuthOptions): express.Router => {
-  const router = express.Router();
+  const router = express.Router({ mergeParams: true });
 
-  const redirectOnError = (req: express.Request, res: express.Response) => {
+  const redirect = (req: express.Request, res: express.Response, ids: { userId: string; tenantId?: string }) => {
     // Parse the finishedUrl, supporting both a plain path and a full url.
     let finUrl: URL | undefined = undefined;
     let fullUrl = false;
@@ -116,7 +119,13 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
       finUrl = new URL(`http://localhost${options.finishedUrl}`);
     }
 
-    finUrl.searchParams.append('error', req.query.error as string);
+    finUrl.searchParams.append('userId', ids.userId);
+    if (ids.tenantId) {
+      finUrl.searchParams.append('tenantId', ids.tenantId);
+    }
+    if (req.query.error) {
+      finUrl.searchParams.append('error', req.query.error as string);
+    }
 
     return res.redirect(fullUrl ? finUrl.toString() : `${finUrl.pathname}?${finUrl.searchParams.toString()}`);
   };
@@ -126,7 +135,7 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
     const tenantId = options.mapToTenantId ? await options.mapToTenantId(req) : undefined;
     const hostedBaseUrl = getHostedBaseUrl(options, req);
 
-    debug(`${userId}: Authorizing on ${hostedBaseUrl}`);
+    dbg({ userId, tenantId }, `Authorizing on ${hostedBaseUrl}`);
 
     const nextUrl = await session.start(serviceId, tenantId, userId, getHostedBaseUrl(options, req));
 
@@ -138,14 +147,16 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
 
     // Check for error
     if (req.query.error) {
-      debug(`Error: ${req.query.error}`);
-      return redirectOnError(req, res);
+      const sessionEntity = await session.get(sessionId);
+
+      dbg(sessionEntity, `Error ${req.query.error}`);
+      return redirect(req, res, sessionEntity);
     }
 
     // Update the session object if it's changed
     const { identityId, tenantId, userId } = await session.commit(serviceId, sessionId);
 
-    debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: Success ${identityId}`);
+    dbg({ userId, tenantId }, `Success ${identityId}`);
 
     // Future: Call options.onAuthorized with the committed identity object, or just id.
     if (options.onComplete) {
@@ -154,10 +165,10 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
       }
     }
 
-    debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: Redirect to ${options.finishedUrl}`);
+    dbg({ userId, tenantId }, `Redirect to ${options.finishedUrl}`);
 
     // Propagate to redirect
-    res.redirect(options.finishedUrl);
+    redirect(req, res, { userId, tenantId });
   });
 
   return router;

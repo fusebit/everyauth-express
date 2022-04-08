@@ -12,6 +12,14 @@ const COMMIT_URL_SUFFIX = '/commit';
 
 const META_INTEGRATION_ID = 'everyauth';
 
+export interface ISession {
+  id: string;
+  userId: string;
+  tenantId?: string;
+
+  tags: Record<string, string | null>;
+}
+
 const getSessionUrl = (profile: IProfile) =>
   `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/integration/${META_INTEGRATION_ID}`;
 
@@ -49,6 +57,23 @@ export const start = async (
   debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: created session ${sessionId}`);
 
   return `${baseUrl}/session/${sessionId}/start`;
+};
+
+export const get = async (sessionId: string): Promise<ISession> => {
+  const profile = await getAuthedProfile();
+  const baseUrl = getSessionUrl(profile);
+
+  const response = await superagent
+    .get(`${baseUrl}/session/${sessionId}`)
+    .set('Authorization', `Bearer ${profile.token}`)
+    .set('User-Agent', EveryAuthVersion);
+
+  // eslint-disable-next-line security/detect-object-injection
+  response.body.userId = response.body.tags[USER_TAG];
+  // eslint-disable-next-line security/detect-object-injection
+  response.body.tenantId = response.body.tags[TENANT_TAG];
+
+  return response.body;
 };
 
 export const commit = async (

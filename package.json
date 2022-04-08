@@ -2,10 +2,8 @@
   "name": "@fusebit/everyauth-express",
   "version": "1.0.0",
   "description": "Everyauth is the easiest way to call third party APIs from your app without learning OAuth.",
-  "main": "index.js",
-  "files": [
-    "libc/**/*"
-  ],
+  "main": "libc/index.js",
+  "files": ["libc/**/*"],
   "scripts": {
     "build": "tsc -b",
     "test": "jest --testPathIgnorePatterns test/manual",
@@ -14,7 +12,8 @@
     "prettier:fix": "git ls-tree -r `git branch --show-current` --name-only | grep -E '.[tj]?sx?$|.yaml$|.json$' | xargs -P 1 prettier --write",
     "prettier:check": "git ls-tree -r `git branch --show-current` --name-only | grep -E '.[tj]?sx?$|.yaml$|.json$' | xargs -P 1 -I \"{}\" sh -c '[ -f {} ] && echo {} || true' | xargs prettier --check",
     "lint:check": "eslint . --ext .ts --color --ignore-path .eslintignore",
-    "lint:fix": "eslint . --ext .ts --color --fix --ignore-path .eslintignore"
+    "lint:fix": "eslint . --ext .ts --color --fix --ignore-path .eslintignore",
+    "identities:clear": "scripts/utility/removeIdentities.sh"
   },
   "repository": {
     "type": "git",
