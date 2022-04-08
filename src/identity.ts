@@ -1,10 +1,15 @@
 import * as superagent from 'superagent';
 
+import debugModule from 'debug';
+const debug = debugModule('everyauth:identity');
+
+import EveryAuthVersion from './version';
+
 import { getAuthedProfile } from './profile';
 
 import * as provider from './provider';
 
-const USER_KEY = 'fusebit.tenantId';
+import { USER_TAG } from './constants';
 
 interface IEveryAuthIdentity {
   id: string;
@@ -33,24 +38,26 @@ export const getIdentity = async (
   serviceId: string,
   credentialOrUserIdOrAttributes: string | IEveryAuthTagSet
 ): Promise<IEveryAuthCredential> => {
-  let identityId: string;
+  let identityId: string | undefined = undefined;
 
-  // Determine which lookup mode we're in:
-  if (typeof credentialOrUserIdOrAttributes == 'string') {
-    if (credentialOrUserIdOrAttributes.startsWith('idn-')) {
-      identityId = credentialOrUserIdOrAttributes;
-    } else {
-      const identities = await getIdentitiesByTags(serviceId, { [USER_KEY]: credentialOrUserIdOrAttributes });
-      const items = identities.items.sort(
-        (a, b) => new Date(a.dateModified).valueOf() - new Date(b.dateModified).valueOf()
-      );
-      identityId = items[0].id;
-    }
+  // Is this already an identity?
+  if (typeof credentialOrUserIdOrAttributes == 'string' && credentialOrUserIdOrAttributes.startsWith('idn-')) {
+    identityId = credentialOrUserIdOrAttributes;
   } else {
-    const identities = await getIdentitiesByTags(serviceId, credentialOrUserIdOrAttributes);
+    let identities: IEveryAuthIdentitySearch;
+
+    if (typeof credentialOrUserIdOrAttributes == 'string') {
+      identities = await getIdentitiesByTags(serviceId, { [USER_TAG]: credentialOrUserIdOrAttributes });
+    } else {
+      identities = await getIdentitiesByTags(serviceId, credentialOrUserIdOrAttributes);
+    }
+
+    debug(`${JSON.stringify(credentialOrUserIdOrAttributes)}: Found ${identities.items.length} matching identities`);
     const items = identities.items.sort(
       (a, b) => new Date(a.dateModified).valueOf() - new Date(b.dateModified).valueOf()
     );
+
+    debug(`${JSON.stringify(credentialOrUserIdOrAttributes)}: returning ${items[0].id}`);
     identityId = items[0].id;
   }
 
@@ -64,6 +71,8 @@ export const getIdentities = async (
   options?: IEveryAuthSearchOptions
 ): Promise<IEveryAuthIdentitySearch> => {
   const identities = await getIdentitiesByTags(serviceId, attributes, options);
+
+  debug(`${JSON.stringify(attributes)}: Found ${identities.items.length} matching identities`);
 
   // Sanitize the return set.
   return {
@@ -80,22 +89,28 @@ export const getIdentityById = async (serviceId: string, identityId: string): Pr
   const profile = await getAuthedProfile();
   const tokenPath = `/api/${identityId}/token`;
   const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
-  const tokenResponse = await superagent.get(`${baseUrl}${tokenPath}`).set('Authorization', `Bearer ${profile.token}`);
+  const tokenResponse = await superagent
+    .get(`${baseUrl}${tokenPath}`)
+    .set('User-Agent', EveryAuthVersion)
+    .set('Authorization', `Bearer ${profile.token}`);
 
   const connectorToken = tokenResponse.body;
   const isEmpty = !connectorToken || Object.keys(connectorToken).length === 0;
 
   if (isEmpty) {
+    debug(`${identityId}: Not found for ${serviceId}`);
     throw new Error(`Cannot find Identity '${identityId}'`);
   }
 
+  debug(`${identityId}: Loaded token for ${serviceId}`);
   return connectorToken;
 };
 
 export const getIdentityByUser = async (serviceId: string, userId: string): Promise<IEveryAuthIdentity> => {
-  const result = await getIdentitiesByTags(serviceId, { [USER_KEY]: userId });
+  const result = await getIdentitiesByTags(serviceId, { [USER_TAG]: userId });
 
   if (result.items.length != 1) {
+    debug(`${userId}: No matching identity found for ${serviceId}`);
     throw new Error(`Unable to find User '${userId}'`);
   }
 
@@ -135,6 +150,7 @@ const getIdentitiesByTags = async (
 
   const response = await superagent
     .get(`${baseUrl}/identity/?${params.toString()}`)
+    .set('User-Agent', EveryAuthVersion)
     .set('Authorization', `Bearer ${profile.token}`);
 
   return response.body;

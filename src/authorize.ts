@@ -2,6 +2,9 @@ import * as express from 'express';
 
 import * as session from './session';
 
+import debugModule from 'debug';
+const debug = debugModule('everyauth:authorize');
+
 export interface IEveryAuthContext {
   // XXX Needs actual useful information
   finishedUrl: string;
@@ -12,7 +15,6 @@ export interface IEveryAuthOptions {
   finishedUrl: string;
   hostedBaseUrl?: string | ((req: express.Request) => string);
   mapToUserId: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
-  mapToTenantId?: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
   // Return false to abort;
   onAuthorized?: (req: express.Request, res: express.Response, everyCtx: IEveryAuthContext) => Promise<boolean>;
   // Return false to indicate the res is handled.
@@ -71,7 +73,8 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
 
   router.get('/', async (req: express.Request, res: express.Response) => {
     const userId = await options.mapToUserId(req);
-
+    const hostedBaseUrl = getHostedBaseUrl(options, req);
+    debug(`${userId}: Authorizing on ${hostedBaseUrl}`);
     const nextUrl = await session.start(serviceId, userId, getHostedBaseUrl(options, req));
 
     res.redirect(nextUrl);
@@ -82,6 +85,7 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
 
     // Check for error
     if (req.query.error) {
+      debug(`Error: ${req.query.error}`);
       return redirectOnError(req, res);
     }
 
@@ -93,7 +97,9 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
     }
 
     // Update the session object if it's changed
-    const identityId = await session.commit(sessionId);
+    const { identityId, userId } = await session.commit(serviceId, sessionId);
+
+    debug(`${userId}: Success ${identityId}`);
 
     // Future: Call options.onAuthorized with the committed identity object, or just id.
     if (options.onComplete) {
@@ -101,6 +107,8 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
         return;
       }
     }
+
+    debug(`${userId}: Redirect to ${options.finishedUrl}`);
 
     // Propagate to redirect
     res.redirect(options.finishedUrl);

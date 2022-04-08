@@ -94,7 +94,7 @@ describe('Manual Test Cases', () => {
     expect(result.ok).toBe(true);
   });
 
-  test.only('Manual: Exercise getIdentities, and getIdentity(identityId)', async () => {
+  test('Manual: Exercise getIdentities, and getIdentity(identityId)', async () => {
     const users = await everyauth.getIdentities('slack', { ['fusebit.tenantId']: 'user-1' });
 
     let n = 0;

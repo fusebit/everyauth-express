@@ -3,6 +3,9 @@ import * as fs from 'fs';
 
 import * as jwt from 'jsonwebtoken';
 
+import debugModule from 'debug';
+const debug = debugModule('everyauth:profile');
+
 const JWT_CACHE_MARGIN = 1000 * 60 * 5; // 5 minute margin before refreshing the key.
 const settingsName = 'settings.json';
 const keyDir = 'keys';
@@ -35,9 +38,9 @@ export interface IProfile {
   token?: string;
 }
 
-let cachedFoundProfile: IProfile;
+export let cachedFoundProfile: IProfile;
 
-const cachedJwt: {
+export const cachedJwt: {
   expiresAt: number;
   token: string;
 } = { expiresAt: 0, token: '' };
@@ -98,6 +101,7 @@ const loadProfileFromDisk = async (settingsDir: string, profileName?: string): P
     publicKey,
   };
 
+  debug(`${settingsDir}: loaded profile`);
   return profile;
 };
 
@@ -123,5 +127,6 @@ export const getAuthedProfile = async (profileName?: string): Promise<IProfile> 
   cachedJwt.expiresAt = Date.now() + 60 * 60 * 24 * 1000;
   cachedJwt.token = jwt.sign({}, profile.pki.privateKey, options);
 
+  debug(`${profile.keyPair}: generated pki key, expiring at ${new Date(cachedJwt.expiresAt).toUTCString()}`);
   return { ...cachedFoundProfile, token: cachedJwt.token };
 };
