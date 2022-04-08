@@ -1,5 +1,6 @@
 const express = require('express');
 const everyauth = require('@fusebit/everyauth-express');
+
 const { WebClient } = require('@slack/web-api');
 
 const app = express();
@@ -11,18 +12,13 @@ app.get('/', (req, res) => {
 
 app.use(
   '/:userId/slack',
-  everyauth.authorize('slack', {
-    finishedUrl: '/finished',
-    mapToUserId: (req) => {
-      console.log(req.params);
-      return req.params.userId;
-    },
-  })
+  everyauth.authorize('slack', { finishedUrl: '/finished', mapToUserId: (req) => req.params.userId })
 );
 
 app.get('/finished', async (req, res) => {
   const userId = req.query.userId;
 
+  // Send a message over slack.
   const userCredentials = await everyauth.getIdentity('slack', userId);
   const slack = new WebClient(userCredentials.accessToken);
   await slack.chat.postMessage({
