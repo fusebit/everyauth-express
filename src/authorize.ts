@@ -6,13 +6,15 @@ import debugModule from 'debug';
 const debug = debugModule('everyauth:authorize');
 
 export interface IEveryAuthContext {
-  /** The url which the service was configured to use. *.
+  /** The url which the service was configured to use. */
   finishedUrl: string;
+
   /**
    * The identity that the user has been authenticated to; this is a database key internal to EveryAuth, and
    * can be saved to reduce a lookup roundtrip on subsequent requests.
    */
   identityId: string;
+
   /** The userId supplied by the mapToUserId function for this request. */
   userId: string;
 }
