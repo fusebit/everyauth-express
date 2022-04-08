@@ -56,12 +56,13 @@ interface IEveryAuthSearchOptions {
  * userId that can be used to search for a matching identity, or a set of attributes that will be used to
  * search.
  * @return A credential with a valid token.
+ * @throws An exception is thrown if no identities are found, or more than one identity is found.
  */
 export const getIdentity = async (
   serviceId: string,
   identityIdOrUserIdOrAttributes: string | IEveryAuthTagSet
 ): Promise<IEveryAuthCredential> => {
-  let identityId: string | undefined = undefined;
+  let identityId;
 
   // Is this already an identity?
   if (typeof identityIdOrUserIdOrAttributes == 'string' && identityIdOrUserIdOrAttributes.startsWith('idn-')) {
@@ -76,12 +77,17 @@ export const getIdentity = async (
     }
 
     debug(`${JSON.stringify(identityIdOrUserIdOrAttributes)}: Found ${identities.items.length} matching identities`);
-    const items = identities.items.sort(
-      (a, b) => new Date(a.dateModified).valueOf() - new Date(b.dateModified).valueOf()
-    );
+    if (identities.items.length > 1) {
+      throw new Error(
+        `The userId "${JSON.stringify(
+          identityIdOrUserIdOrAttributes
+        )}" resolves to more than one identity. Either use "getIdentities" to list all of the matching identities, or remove redundant identity using "everynode identity rm" or "deleteIdentity"`
+      );
+    }
 
-    debug(`${JSON.stringify(identityIdOrUserIdOrAttributes)}: returning ${items[0].id}`);
-    identityId = items[0].id;
+    debug(`${JSON.stringify(identityIdOrUserIdOrAttributes)}: returning ${identities.items[0].id}`);
+
+    identityId = identities.items[0].id;
   }
 
   const creds = await getIdentityById(serviceId, identityId);
@@ -92,18 +98,26 @@ export const getIdentity = async (
 /**
  * Search for matching identities and return all matches found. The results do not include valid tokens.
  * @param serviceId The service to search for matching identities within.
- * @param attributes A set of attributes that are used as search criteria.
+ * @param userIdOrAttributes A set of attributes that are used as search criteria.
+ * @param userIdOrAttributes Either a userId that can be used to search for a matching identity, or a set of
+ * attributes that will be used to search.
  * @param options Options to control the pagination or request subsequent pages of results.
  * @return A set of matching identities
  */
 export const getIdentities = async (
   serviceId: string,
-  attributes: IEveryAuthTagSet,
+  userIdOrAttributes: string | IEveryAuthTagSet,
   options?: IEveryAuthSearchOptions
 ): Promise<IEveryAuthIdentitySearch> => {
-  const identities = await getIdentitiesByTags(serviceId, attributes, options);
+  let identities;
 
-  debug(`${JSON.stringify(attributes)}: Found ${identities.items.length} matching identities`);
+  if (typeof userIdOrAttributes == 'string') {
+    identities = await getIdentitiesByTags(serviceId, { [USER_TAG]: userIdOrAttributes }, options);
+  } else {
+    identities = await getIdentitiesByTags(serviceId, userIdOrAttributes, options);
+  }
+
+  debug(`${JSON.stringify(userIdOrAttributes)}: Found ${identities.items.length} matching identities`);
 
   // Sanitize the return set.
   return {
@@ -114,6 +128,23 @@ export const getIdentities = async (
     })),
     next: identities.next,
   };
+};
+
+/**
+ * Delete a specified identity.
+ *
+ * @param serviceId The service to search for matching identities within.
+ * @param identityId The identity to delete.
+ */
+export const deleteIdentity = async (serviceId: string, identityId: string): Promise<void> => {
+  const profile = await getAuthedProfile();
+  const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
+
+  await superagent
+    .delete(`${baseUrl}/identity/${identityId}`)
+    .set('User-Agent', EveryAuthVersion)
+    .set('Authorization', `Bearer ${profile.token}`)
+    .ok(() => true);
 };
 
 const getIdentityById = async (serviceId: string, identityId: string): Promise<IEveryAuthIdentity> => {

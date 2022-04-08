@@ -71,6 +71,16 @@ const runTest = async () => {
 };
 
 describe('Manual Test Cases', () => {
+  beforeAll(async () => {
+    let next: string | undefined = undefined;
+
+    do {
+      const identities: any = await everyauth.getIdentities('slack', 'user-1', { next });
+      await Promise.all(identities.items.map((identity: any) => everyauth.deleteIdentity('slack', identity.id)));
+      next = identities.next;
+    } while (next);
+  });
+
   test('Manual: Validate that the express middleware works for Slack', async () => {
     // eslint-disable-next-line no-console
     console.log('Accept this Slack authorization');
@@ -89,14 +99,14 @@ describe('Manual Test Cases', () => {
     const userCredentials = await everyauth.getIdentity('slack', 'user-1');
     const slack = new WebClient(userCredentials.accessToken);
     const result = await slack.chat.postMessage({
-      text: 'Hello World from EveryAuth',
+      text: 'Hello World from EveryAuth: getIdentity',
       channel: '#demo',
     });
     expect(result.ok).toBe(true);
   });
 
   test('Manual: Exercise getIdentities, and getIdentity(identityId)', async () => {
-    const users = await everyauth.getIdentities('slack', { ['fusebit.tenantId']: 'user-1' });
+    const users = await everyauth.getIdentities('slack', 'user-1');
 
     let n = 0;
 
@@ -112,4 +122,15 @@ describe('Manual Test Cases', () => {
       })
     );
   }, 180000);
+
+  test('Manual: Re-auth a user', async () => {
+    // eslint-disable-next-line no-console
+    console.log('Accept this Slack authorization');
+    const result = await runTest();
+    expect(result).toBe('success');
+  }, 180000);
+
+  test('Manual: Validate getIdentity(userId) throws on duplicate identities', async () => {
+    await expect(everyauth.getIdentity('slack', 'user-1')).rejects.toThrow();
+  });
 });
