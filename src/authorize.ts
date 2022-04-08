@@ -6,8 +6,7 @@ import debugModule from 'debug';
 const debug = debugModule('everyauth:authorize');
 
 export interface IEveryAuthContext {
-  /** The url which the service was configured to use. */
-  finishedUrl: string;
+  finishedUrl: string /** The url which the service was configured to use. */;
 
   /**
    * The identity that the user has been authenticated to; this is a database key internal to EveryAuth, and
@@ -15,8 +14,8 @@ export interface IEveryAuthContext {
    */
   identityId: string;
 
-  /** The userId supplied by the mapToUserId function for this request. */
-  userId: string;
+  tenantId: string /** The tenantId supplied by the mapToTenantId function for this request. */;
+  userId: string /** The userId supplied by the mapToUserId function for this request. */;
 }
 
 export interface IEveryAuthOptions {
@@ -34,6 +33,15 @@ export interface IEveryAuthOptions {
    * programmatically by looking at various attributes on the request object.
    */
   hostedBaseUrl?: string | ((req: express.Request) => string);
+
+  /**
+   * Map the current request to a unique tenantId that can be used to retrieve the authorized token on
+   * subsequent requests.  Usually extracts the value from the output of the authorization system, or can be a
+   * constant for experimentation and testing purposes.
+   *
+   * The tenant represents the larger customer, which may include multiple authorized users.
+   */
+  mapToTenantId?: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
 
   /**
    * Map the current request to a unique userId tag that can be used to retrieve the authorized token on
@@ -85,6 +93,7 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
 
 /**
  * Authorize a user with a particular service.
+ *
  * @param serviceId The name of the service to authorize the user against.
  * @param options Configuration options to control the behavior of this authorization.
  * @return An Express Router
@@ -114,9 +123,12 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
 
   router.get('/', async (req: express.Request, res: express.Response) => {
     const userId = await options.mapToUserId(req);
+    const tenantId = options.mapToTenantId ? await options.mapToTenantId(req) : undefined;
     const hostedBaseUrl = getHostedBaseUrl(options, req);
+
     debug(`${userId}: Authorizing on ${hostedBaseUrl}`);
-    const nextUrl = await session.start(serviceId, userId, getHostedBaseUrl(options, req));
+
+    const nextUrl = await session.start(serviceId, tenantId, userId, getHostedBaseUrl(options, req));
 
     res.redirect(nextUrl);
   });
@@ -131,18 +143,18 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
     }
 
     // Update the session object if it's changed
-    const { identityId, userId } = await session.commit(serviceId, sessionId);
+    const { identityId, tenantId, userId } = await session.commit(serviceId, sessionId);
 
-    debug(`${userId}: Success ${identityId}`);
+    debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: Success ${identityId}`);
 
     // Future: Call options.onAuthorized with the committed identity object, or just id.
     if (options.onComplete) {
-      if (!(await options.onComplete(req, res, { finishedUrl: options.finishedUrl, identityId, userId }))) {
+      if (!(await options.onComplete(req, res, { finishedUrl: options.finishedUrl, identityId, tenantId, userId }))) {
         return;
       }
     }
 
-    debug(`${userId}: Redirect to ${options.finishedUrl}`);
+    debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: Redirect to ${options.finishedUrl}`);
 
     // Propagate to redirect
     res.redirect(options.finishedUrl);

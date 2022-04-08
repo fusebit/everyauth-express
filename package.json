@@ -8,8 +8,9 @@
   ],
   "scripts": {
     "build": "tsc -b",
-    "test": "jest",
+    "test": "jest --testPathIgnorePatterns test/manual",
     "test:setup": "scripts/test/populateTestProfiles.sh",
+    "test:manual": "jest test/manual",
     "prettier:fix": "git ls-tree -r `git branch --show-current` --name-only | grep -E '.[tj]?sx?$|.yaml$|.json$' | xargs -P 1 prettier --write",
     "prettier:check": "git ls-tree -r `git branch --show-current` --name-only | grep -E '.[tj]?sx?$|.yaml$|.json$' | xargs -P 1 -I \"{}\" sh -c '[ -f {} ] && echo {} || true' | xargs prettier --check",
     "lint:check": "eslint . --ext .ts --color --ignore-path .eslintignore",
@@ -49,6 +50,6 @@
     "debug": "^4.3.4",
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
-    "superagent": "^7.1.2"
+    "superagent": "^7.1.1"
   }
 }

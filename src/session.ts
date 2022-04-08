@@ -6,7 +6,7 @@ const debug = debugModule('everyauth:profile');
 import { getAuthedProfile, IProfile } from './profile';
 import EveryAuthVersion from './version';
 
-import { USER_TAG } from './constants';
+import { USER_TAG, TENANT_TAG } from './constants';
 
 const COMMIT_URL_SUFFIX = '/commit';
 
@@ -15,7 +15,12 @@ const META_INTEGRATION_ID = 'everyauth';
 const getSessionUrl = (profile: IProfile) =>
   `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/integration/${META_INTEGRATION_ID}`;
 
-export const start = async (serviceId: string, userId: string, hostedBaseUrl: string): Promise<string> => {
+export const start = async (
+  serviceId: string,
+  tenantId: string | undefined,
+  userId: string,
+  hostedBaseUrl: string
+): Promise<string> => {
   const profile = await getAuthedProfile();
   const baseUrl = getSessionUrl(profile);
 
@@ -23,6 +28,11 @@ export const start = async (serviceId: string, userId: string, hostedBaseUrl: st
     redirectUrl: `${hostedBaseUrl}${COMMIT_URL_SUFFIX}`,
     tags: {
       [USER_TAG]: userId,
+      ...(tenantId
+        ? {
+            [TENANT_TAG]: tenantId,
+          }
+        : {}),
     },
     components: [serviceId],
   };
@@ -36,12 +46,15 @@ export const start = async (serviceId: string, userId: string, hostedBaseUrl: st
 
   const sessionId = response.body.id;
 
-  debug(`${userId}: created session ${sessionId}`);
+  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: created session ${sessionId}`);
 
   return `${baseUrl}/session/${sessionId}/start`;
 };
 
-export const commit = async (serviceId: string, sessionId: string): Promise<{ identityId: string; userId: string }> => {
+export const commit = async (
+  serviceId: string,
+  sessionId: string
+): Promise<{ identityId: string; tenantId: string; userId: string }> => {
   const profile = await getAuthedProfile();
   const baseUrl = getSessionUrl(profile);
 
@@ -75,8 +88,10 @@ export const commit = async (serviceId: string, sessionId: string): Promise<{ id
   const identityId = install.body.data[serviceId].entityId;
   // eslint-disable-next-line security/detect-object-injection
   const userId = result.body.tags[USER_TAG];
+  // eslint-disable-next-line security/detect-object-injection
+  const tenantId = result.body.tags[TENANT_TAG];
 
-  debug(`${userId}: created identity ${identityId}`);
+  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: created identity ${identityId}`);
 
-  return { identityId, userId };
+  return { identityId, tenantId, userId };
 };
