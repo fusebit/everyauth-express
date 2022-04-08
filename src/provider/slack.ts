@@ -1,3 +1,9 @@
+/**
+ * The results of an OAuth operation with Slack.
+ *
+ * {@link https://api.slack.com/methods/oauth.v2.access#examples | See the official Slack documentation for
+ * more details. }
+ */
 export interface INative {
   ok: boolean;
   team: { id: string; name: string };

@@ -12,52 +12,75 @@ import * as provider from './provider';
 import { USER_TAG } from './constants';
 
 interface IEveryAuthIdentity {
+  /** A unique key for this identity. */
   id: string;
+  /** A set of key/value pairs that act as attributes on this identity. */
   tags: IEveryAuthTagSet;
+  /** The last date that the identity was modified. */
   dateModified: string;
 }
 
+/** The results from a getIdentities search. */
 interface IEveryAuthIdentitySearch {
   items: IEveryAuthIdentity[];
+  /** A token that can be supplied back to request the next page of results. */
   next?: string;
 }
 
+/** A specific credential associated with an identityId, normalized to provide a standard interface. */
 interface IEveryAuthCredential {
+  /** One of the raw results from a particular service; varies based on what service is requested. */
   native: provider.INative;
+  /** The OAuth2 accessToken used to authenticate a request. */
   accessToken: string;
 }
 
+/**
+ * A set of key/value attributes. Use 'undefined' to indicate that any value will match, for a particular
+ * key, during a search.
+ */
 type IEveryAuthTagSet = Record<string, string | undefined | null>;
 
+/** Options that control the pagination of getIdentities requests. */
 interface IEveryAuthSearchOptions {
   next?: string;
   pageSize?: number;
 }
 
+/**
+ * Retrieve a valid accessToken for a specific service.  If search criteria such as a userId or attributes are
+ * used, only the most recent matching identity will be returned.
+ *
+ * @param serviceId The service to search for matching identities within.
+ * @param identityIdOrUserIdOrAttributes Either an identity id uniquely identifying a specific identity, a
+ * userId that can be used to search for a matching identity, or a set of attributes that will be used to
+ * search.
+ * @return A credential with a valid token.
+ */
 export const getIdentity = async (
   serviceId: string,
-  credentialOrUserIdOrAttributes: string | IEveryAuthTagSet
+  identityIdOrUserIdOrAttributes: string | IEveryAuthTagSet
 ): Promise<IEveryAuthCredential> => {
   let identityId: string | undefined = undefined;
 
   // Is this already an identity?
-  if (typeof credentialOrUserIdOrAttributes == 'string' && credentialOrUserIdOrAttributes.startsWith('idn-')) {
-    identityId = credentialOrUserIdOrAttributes;
+  if (typeof identityIdOrUserIdOrAttributes == 'string' && identityIdOrUserIdOrAttributes.startsWith('idn-')) {
+    identityId = identityIdOrUserIdOrAttributes;
   } else {
     let identities: IEveryAuthIdentitySearch;
 
-    if (typeof credentialOrUserIdOrAttributes == 'string') {
-      identities = await getIdentitiesByTags(serviceId, { [USER_TAG]: credentialOrUserIdOrAttributes });
+    if (typeof identityIdOrUserIdOrAttributes == 'string') {
+      identities = await getIdentitiesByTags(serviceId, { [USER_TAG]: identityIdOrUserIdOrAttributes });
     } else {
-      identities = await getIdentitiesByTags(serviceId, credentialOrUserIdOrAttributes);
+      identities = await getIdentitiesByTags(serviceId, identityIdOrUserIdOrAttributes);
     }
 
-    debug(`${JSON.stringify(credentialOrUserIdOrAttributes)}: Found ${identities.items.length} matching identities`);
+    debug(`${JSON.stringify(identityIdOrUserIdOrAttributes)}: Found ${identities.items.length} matching identities`);
     const items = identities.items.sort(
       (a, b) => new Date(a.dateModified).valueOf() - new Date(b.dateModified).valueOf()
     );
 
-    debug(`${JSON.stringify(credentialOrUserIdOrAttributes)}: returning ${items[0].id}`);
+    debug(`${JSON.stringify(identityIdOrUserIdOrAttributes)}: returning ${items[0].id}`);
     identityId = items[0].id;
   }
 
@@ -65,6 +88,13 @@ export const getIdentity = async (
   return (provider as any)[serviceId].normalize(creds);
 };
 
+/**
+ * Search for matching identities and return all matches found. The results do not include valid tokens.
+ * @param serviceId The service to search for matching identities within.
+ * @param attributes A set of attributes that are used as search criteria.
+ * @param options Options to control the pagination or request subsequent pages of results.
+ * @return A set of matching identities
+ */
 export const getIdentities = async (
   serviceId: string,
   attributes: IEveryAuthTagSet,
@@ -85,7 +115,7 @@ export const getIdentities = async (
   };
 };
 
-export const getIdentityById = async (serviceId: string, identityId: string): Promise<IEveryAuthIdentity> => {
+const getIdentityById = async (serviceId: string, identityId: string): Promise<IEveryAuthIdentity> => {
   const profile = await getAuthedProfile();
   const tokenPath = `/api/${identityId}/token`;
   const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
@@ -104,17 +134,6 @@ export const getIdentityById = async (serviceId: string, identityId: string): Pr
 
   debug(`${identityId}: Loaded token for ${serviceId}`);
   return connectorToken;
-};
-
-export const getIdentityByUser = async (serviceId: string, userId: string): Promise<IEveryAuthIdentity> => {
-  const result = await getIdentitiesByTags(serviceId, { [USER_TAG]: userId });
-
-  if (result.items.length != 1) {
-    debug(`${userId}: No matching identity found for ${serviceId}`);
-    throw new Error(`Unable to find User '${userId}'`);
-  }
-
-  return getIdentityById(serviceId, result.items[0].id);
 };
 
 const getIdentitiesByTags = async (

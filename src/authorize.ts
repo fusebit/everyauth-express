@@ -6,21 +6,54 @@ import debugModule from 'debug';
 const debug = debugModule('everyauth:authorize');
 
 export interface IEveryAuthContext {
-  // XXX Needs actual useful information
+  /** The url which the service was configured to use. *.
   finishedUrl: string;
-  identityId?: string;
+  /**
+   * The identity that the user has been authenticated to; this is a database key internal to EveryAuth, and
+   * can be saved to reduce a lookup roundtrip on subsequent requests.
+   */
+  identityId: string;
+  /** The userId supplied by the mapToUserId function for this request. */
+  userId: string;
 }
 
 export interface IEveryAuthOptions {
+  /**
+   * The URL that the user should be sent to after the operation is complete. Can be either
+   * '/path/component/only' or a fully qualified URL.
+   *
+   * Supplied with an `error` query parameter if the operation resulted in an error.
+   */
   finishedUrl: string;
+
+  /**
+   * Either a string or a function which generates a string that contains the protocol, hostname, port, and
+   * path to the current mount point.  If this is not supplied, the EveryAuth system attempts to determine it
+   * programmatically by looking at various attributes on the request object.
+   */
   hostedBaseUrl?: string | ((req: express.Request) => string);
+
+  /**
+   * Map the current request to a unique userId tag that can be used to retrieve the authorized token on
+   * subsequent requests.  Usually extracts the value from the output of the authorization system, or can be a
+   * constant for experimentation and testing purposes.
+   */
   mapToUserId: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
-  // Return false to abort;
-  onAuthorized?: (req: express.Request, res: express.Response, everyCtx: IEveryAuthContext) => Promise<boolean>;
-  // Return false to indicate the res is handled.
+
+  /**
+   * Called after the authorization process completed.
+   *
+   * Return false to indicate that the request was responded to, and that EveryAuth should not redirect the
+   * caller to the finishedUrl automatically.
+   */
   onComplete?: (req: express.Request, res: express.Response, everyCtx: IEveryAuthContext) => Promise<boolean>;
 }
 
+/**
+ * @ignore
+ *
+ * Tries to determine the publically-visible URL for this part of the router.
+ */
 export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Request): string => {
   // Supplied in options; use that.
   if (options.hostedBaseUrl) {
@@ -48,6 +81,12 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
   return `${req.protocol}://${req.hostname}${port}${req.originalUrl}`;
 };
 
+/**
+ * Authorize a user with a particular service.
+ * @param serviceId The name of the service to authorize the user against.
+ * @param options Configuration options to control the behavior of this authorization.
+ * @return An Express Router
+ */
 export const authorize = (serviceId: string, options: IEveryAuthOptions): express.Router => {
   const router = express.Router();
 
@@ -89,13 +128,6 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
       return redirectOnError(req, res);
     }
 
-    // Future: Call options.onAuthorized with the nascient identity object
-    if (options.onAuthorized) {
-      if (!(await options.onAuthorized(req, res, { finishedUrl: options.finishedUrl }))) {
-        return;
-      }
-    }
-
     // Update the session object if it's changed
     const { identityId, userId } = await session.commit(serviceId, sessionId);
 
@@ -103,7 +135,7 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
 
     // Future: Call options.onAuthorized with the committed identity object, or just id.
     if (options.onComplete) {
-      if (!(await options.onComplete(req, res, { finishedUrl: options.finishedUrl, identityId }))) {
+      if (!(await options.onComplete(req, res, { finishedUrl: options.finishedUrl, identityId, userId }))) {
         return;
       }
     }
