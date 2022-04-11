@@ -17,10 +17,12 @@ export const getChildrenByTags = async <ISearchResultType>(
   childElementType: 'identity' | 'install',
   options?: IEveryAuthSearchOptions
 ): Promise<{ items: ISearchResultType[] }> => {
+  // eslint-disable-next-line security/detect-object-injection
   if (!tags[SERVICE_TAG]) {
     throw new Error(`Missing tag ${SERVICE_TAG}`);
   }
 
+  // eslint-disable-next-line security/detect-object-injection
   if (!tags[USER_TAG]) {
     throw new Error(`Missting tag ${USER_TAG}`);
   }

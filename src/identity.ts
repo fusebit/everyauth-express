@@ -172,6 +172,7 @@ export const deleteIdentity = async (serviceId: string, identityId: string): Pro
   }
 
   // Get the parent install object.
+  // eslint-disable-next-line security/detect-object-injection
   const installId = await getInstallIdBySession(identity.body.tags[SESSION_TAG]);
 
   if (installId) {
