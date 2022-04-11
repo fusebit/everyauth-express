@@ -1,10 +1,16 @@
+process.env.EVERYAUTH_VERSION_PREFIX = 'test-';
+
 import express = require('express');
+import superagent = require('superagent');
 import open = require('open');
 import * as http from 'http';
 import { WebClient } from '@slack/web-api';
 
 import { createHttpTerminator } from 'http-terminator';
 
+import EveryAuthVersion from '../src/version';
+
+import { USER_TAG, SERVICE_TAG } from '../src/constants';
 import * as everyauth from '../src';
 
 interface IServer {
@@ -53,13 +59,13 @@ const runTest = async (options?: { deny?: boolean } & Partial<everyauth.IEveryAu
 
   server.app.get('/allow', (req: express.Request, res: express.Response) => {
     res.send(
-      '<html><body style="background-color:#00c100"><br/>ACCEPT<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>'
+      '<html><body style="background-color:#00c100"><br/>ALLOW<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>'
     );
   });
 
   server.app.get('/reject', (req: express.Request, res: express.Response) => {
     res.send(
-      '<html><body style="background-color:#c10000"><br/>REJECT<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>'
+      '<html><body style="background-color:#c10000"><br/>CANCEL<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>'
     );
   });
 
@@ -146,7 +152,28 @@ describe('Manual Test Cases', () => {
   //
 
   test('Manual: Validate getIdentity(userId) throws on duplicate identities', async () => {
+    const profile = await everyauth.profile.getAuthedProfile();
+    const identityUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/slack/identity/`;
+
+    /* This works fine. */
+    await expect(everyauth.getIdentity('slack', 'user-1')).resolves.toMatchObject({});
+
+    /* Add an additional identity to cause a failure. */
+    const dupIdentity = await superagent
+      .post(identityUrl)
+      .set('User-Agent', EveryAuthVersion)
+      .set('Authorization', `Bearer ${profile.token}`)
+      .set('Content-Type', 'application/json')
+      .send({ data: { test: true }, tags: { [USER_TAG]: 'user-1', [SERVICE_TAG]: 'slack' } });
+
+    /* This should throw, due to duplicate matching identities. */
     await expect(everyauth.getIdentity('slack', 'user-1')).rejects.toThrow();
+
+    /* Clean up. */
+    await superagent
+      .delete(`${identityUrl}${dupIdentity.body.id}`)
+      .set('User-Agent', EveryAuthVersion)
+      .set('Authorization', `Bearer ${profile.token}`);
   });
 
   test('Manual: Verify no matches with tenantId', async () => {

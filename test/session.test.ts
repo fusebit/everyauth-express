@@ -1,3 +1,5 @@
+process.env.EVERYAUTH_VERSION_PREFIX = 'test-';
+
 import * as path from 'path';
 import * as everyauth from '../src';
 

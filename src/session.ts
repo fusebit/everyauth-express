@@ -5,8 +5,9 @@ const debug = debugModule('everyauth:profile');
 
 import { getAuthedProfile, IProfile } from './profile';
 import EveryAuthVersion from './version';
+import { getInstallIdByTags } from './install';
 
-import { USER_TAG, TENANT_TAG } from './constants';
+import { SERVICE_TAG, USER_TAG, TENANT_TAG } from './constants';
 
 const COMMIT_URL_SUFFIX = '/commit';
 
@@ -32,9 +33,10 @@ export const start = async (
   const profile = await getAuthedProfile();
   const baseUrl = getSessionUrl(profile);
 
-  const payload = {
+  const payload: { redirectUrl: string; tags: Record<string, string>; components: string[]; installId?: string } = {
     redirectUrl: `${hostedBaseUrl}${COMMIT_URL_SUFFIX}`,
     tags: {
+      [SERVICE_TAG]: serviceId,
       [USER_TAG]: userId,
       ...(tenantId
         ? {
@@ -44,6 +46,15 @@ export const start = async (
     },
     components: [serviceId],
   };
+
+  // Is there an existing matching user?
+  try {
+    payload.installId = await getInstallIdByTags({ serviceId, userId, tenantId });
+    debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: found matching install, reusing ${payload.installId}`);
+  } catch (e) {
+    // No previously issued credentials found
+    debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: No matching installs`);
+  }
 
   const response = await superagent
     .post(`${baseUrl}/session`)
@@ -116,7 +127,7 @@ export const commit = async (
   // eslint-disable-next-line security/detect-object-injection
   const tenantId = result.body.tags[TENANT_TAG];
 
-  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: created identity ${identityId}`);
+  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: established identity ${identityId}`);
 
   return { identityId, tenantId, userId };
 };

@@ -4,16 +4,23 @@ import debugModule from 'debug';
 const debug = debugModule('everyauth:identity');
 
 import EveryAuthVersion from './version';
-
 import { getAuthedProfile } from './profile';
 
 import * as provider from './provider';
 
-import { USER_TAG, TENANT_TAG } from './constants';
+import { SERVICE_TAG, USER_TAG, TENANT_TAG, SESSION_TAG } from './constants';
+import { getInstallIdBySession } from './install';
+import { getChildrenByTags } from './subcomponent';
+
+/**
+ * A set of key/value tags. Use 'undefined' to indicate that any value will match, for a particular
+ * key, during a search.
+ */
+export type IEveryAuthTagSet = Record<string, string | undefined | null>;
 
 interface IEveryAuthIdentity {
   id: string /** A unique key for this identity. */;
-  tags: IEveryAuthTagSet /** A set of key/value pairs that act as attributes on this identity. */;
+  tags: IEveryAuthTagSet /** A set of key/value pairs that act as tags on this identity. */;
   dateModified: string /** The last date that the identity was modified. */;
 }
 
@@ -23,112 +30,112 @@ interface IEveryAuthIdentitySearch {
   next?: string /** A token that can be supplied back to request the next page of results. */;
 }
 
+/** Options that control the pagination of getIdentities requests. */
+export interface IEveryAuthSearchOptions {
+  next?: string;
+  pageSize?: number;
+}
+
 /** A specific credential associated with an identityId, normalized to provide a standard interface. */
 interface IEveryAuthCredential {
   native: provider.INative /** The raw identity from a service. */;
   accessToken: string /** The OAuth2 accessToken used to authenticate a request. */;
 }
 
-/**
- * A set of key/value attributes. Use 'undefined' to indicate that any value will match, for a particular
- * key, during a search.
- */
-type IEveryAuthTagSet = Record<string, string | undefined | null>;
-
 interface IEveryAuthUserTenantSet {
   userId?: string;
   tenantId?: string;
 }
 
-/** Options that control the pagination of getIdentities requests. */
-interface IEveryAuthSearchOptions {
-  next?: string;
-  pageSize?: number;
-}
-
 /**
- * Retrieve a valid accessToken for a specific service.  If search criteria such as a userId or attributes are
+ * Retrieve a valid accessToken for a specific service.  If search criteria such as a userId or tags are
  * used, only the most recent matching identity will be returned.
  *
  * @param serviceId The service to search for matching identities within.
- * @param identityOrIdsOrAttributes Either an identity id uniquely identifying a specific identity, a
- * userId that can be used to search for a matching identity, or a set of attributes that will be used to
+ * @param identityOrIdsOrTags Either an identity id uniquely identifying a specific identity, a
+ * userId that can be used to search for a matching identity, or a set of tags that will be used to
  * search.
  * @return A credential with a valid token.
  * @throws An exception is thrown if no identities are found, or more than one identity is found.
  */
 export const getIdentity = async (
   serviceId: string,
-  identityOrIdsOrAttributes: string | IEveryAuthUserTenantSet | IEveryAuthTagSet
+  identityOrIdsOrTags: string | IEveryAuthUserTenantSet | IEveryAuthTagSet
 ): Promise<IEveryAuthCredential> => {
   let identityId;
 
   // Is this already an identity?
-  if (typeof identityOrIdsOrAttributes == 'string' && identityOrIdsOrAttributes.startsWith('idn-')) {
-    identityId = identityOrIdsOrAttributes;
+  if (typeof identityOrIdsOrTags == 'string' && identityOrIdsOrTags.startsWith('idn-')) {
+    identityId = identityOrIdsOrTags;
   } else {
     let identities: IEveryAuthIdentitySearch;
 
-    if (typeof identityOrIdsOrAttributes == 'string') {
-      identities = await getIdentitiesByTags(serviceId, { [USER_TAG]: identityOrIdsOrAttributes });
-    } else if (identityOrIdsOrAttributes.userId || identityOrIdsOrAttributes.tenantId) {
+    if (typeof identityOrIdsOrTags == 'string') {
+      identities = await getIdentitiesByTags(serviceId, { [USER_TAG]: identityOrIdsOrTags });
+    } else if (identityOrIdsOrTags.userId || identityOrIdsOrTags.tenantId) {
       identities = await getIdentitiesByTags(serviceId, {
-        [USER_TAG]: identityOrIdsOrAttributes.userId,
-        [TENANT_TAG]: identityOrIdsOrAttributes.tenantId,
+        [USER_TAG]: identityOrIdsOrTags.userId,
+        [TENANT_TAG]: identityOrIdsOrTags.tenantId,
       });
     } else {
-      identities = await getIdentitiesByTags(serviceId, identityOrIdsOrAttributes as IEveryAuthTagSet);
+      identities = await getIdentitiesByTags(serviceId, identityOrIdsOrTags as IEveryAuthTagSet);
     }
 
-    debug(`${JSON.stringify(identityOrIdsOrAttributes)}: Found ${identities.items.length} matching identities`);
+    debug(`${JSON.stringify(identityOrIdsOrTags)}: Found ${identities.items.length} matching identities`);
     if (identities.items.length > 1) {
       throw new Error(
         `The userId "${JSON.stringify(
-          identityOrIdsOrAttributes
+          identityOrIdsOrTags
         )}" resolves to more than one identity. Either use "getIdentities" to list all of the matching identities, or remove redundant identity using "everynode identity rm" or "deleteIdentity"`
       );
     }
 
-    debug(`${JSON.stringify(identityOrIdsOrAttributes)}: returning ${identities.items[0].id}`);
+    if (identities.items.length == 0) {
+      throw new Error('No credentials found');
+    }
+
+    debug(`${JSON.stringify(identityOrIdsOrTags)}: returning ${identities.items[0].id}`);
 
     identityId = identities.items[0].id;
   }
 
-  const creds = await getIdentityById(serviceId, identityId);
+  const creds = await getTokenForIdentity(serviceId, identityId);
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
   return (provider as any)[serviceId].normalize(creds);
 };
 
 /**
- * Search for matching identities and return all matches found. The results do not include valid tokens.
+ * Search for matching identities and return all matches found. The results do not include security tokens.
  *
  * @param serviceId The service to search for matching identities within.
- * @param idsOrAttributes Either a { userId, tenantId } that can be used to search for a matching identity, or a set of
- * attributes that will be used to search.
+ * @param idsOrTags Either a { userId, tenantId } that can be used to search for a matching identity, or a set of
+ * tags that will be used to search.
  * @param options Options to control the pagination or request subsequent pages of results.
  * @return A set of matching identities
  */
 export const getIdentities = async (
   serviceId: string,
-  idsOrAttributes: IEveryAuthUserTenantSet | IEveryAuthTagSet,
+  idsOrTags: IEveryAuthUserTenantSet | IEveryAuthTagSet,
   options?: IEveryAuthSearchOptions
 ): Promise<IEveryAuthIdentitySearch> => {
   let identities;
 
-  if (idsOrAttributes.userId || idsOrAttributes.tenantId) {
+  if (idsOrTags.userId || idsOrTags.tenantId) {
     identities = await getIdentitiesByTags(
       serviceId,
       {
-        ...('userId' in idsOrAttributes ? { [USER_TAG]: idsOrAttributes.userId } : {}),
-        ...('tenantId' in idsOrAttributes ? { [TENANT_TAG]: idsOrAttributes.tenantId } : {}),
+        [SERVICE_TAG]: serviceId,
+        ...('userId' in idsOrTags ? { [USER_TAG]: idsOrTags.userId } : {}),
+        ...('tenantId' in idsOrTags ? { [TENANT_TAG]: idsOrTags.tenantId } : {}),
       },
       options
     );
   } else {
-    identities = await getIdentitiesByTags(serviceId, idsOrAttributes as IEveryAuthTagSet, options);
+    identities = await getIdentitiesByTags(serviceId, idsOrTags as IEveryAuthTagSet, options);
   }
 
-  debug(`${JSON.stringify(idsOrAttributes)}: Found ${identities.items.length} matching identities`);
+  debug(`${JSON.stringify(idsOrTags)}: Found ${identities.items.length} matching identities`);
 
   // Sanitize the return set.
   return {
@@ -149,16 +156,42 @@ export const getIdentities = async (
  */
 export const deleteIdentity = async (serviceId: string, identityId: string): Promise<void> => {
   const profile = await getAuthedProfile();
-  const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
+  const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}`;
+  const conUrl = `/connector/${serviceId}`;
+  const intUrl = '/integration/everyauth';
 
+  // Get the identity object
+  const identity = await superagent
+    .get(`${baseUrl}${conUrl}/identity/${identityId}`)
+    .set('User-Agent', EveryAuthVersion)
+    .set('Authorization', `Bearer ${profile.token}`)
+    .ok(() => true);
+
+  if (identity.statusCode != 200) {
+    return;
+  }
+
+  // Get the parent install object.
+  const installId = await getInstallIdBySession(identity.body.tags[SESSION_TAG]);
+
+  if (installId) {
+    // Delete install
+    await superagent
+      .delete(`${baseUrl}${intUrl}/install/${installId}`)
+      .set('User-Agent', EveryAuthVersion)
+      .set('Authorization', `Bearer ${profile.token}`)
+      .ok(() => true);
+  }
+
+  // Delete identity
   await superagent
-    .delete(`${baseUrl}/identity/${identityId}`)
+    .delete(`${baseUrl}${conUrl}/identity/${identityId}`)
     .set('User-Agent', EveryAuthVersion)
     .set('Authorization', `Bearer ${profile.token}`)
     .ok(() => true);
 };
 
-const getIdentityById = async (serviceId: string, identityId: string): Promise<IEveryAuthIdentity> => {
+const getTokenForIdentity = async (serviceId: string, identityId: string): Promise<IEveryAuthIdentity> => {
   const profile = await getAuthedProfile();
   const tokenPath = `/api/${identityId}/token`;
   const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
@@ -184,38 +217,10 @@ const getIdentitiesByTags = async (
   tags: IEveryAuthTagSet,
   options?: IEveryAuthSearchOptions
 ): Promise<IEveryAuthIdentitySearch> => {
-  // Convert the IEveryAuthTagSet into the right query parameters
-  const params = new URLSearchParams();
-  const keyOnly: string[] = [];
-  Object.entries(tags).forEach(([key, value]) => {
-    if (value === null) {
-      value = 'null';
-    } else if (value === undefined) {
-      keyOnly.push(`tag=${encodeURIComponent(key)}`);
-      return;
-    } else {
-      value = encodeURIComponent(value);
-    }
-    params.append('tag', `${encodeURIComponent(key)}=${value}`);
-  });
-
-  if (options) {
-    if (options.next) {
-      params.set('next', options.next);
-    }
-
-    if (options.pageSize) {
-      params.set('pageSize', `${options.pageSize}`);
-    }
-  }
-
-  const profile = await getAuthedProfile();
-  const baseUrl = `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/connector/${serviceId}`;
-
-  const response = await superagent
-    .get(`${baseUrl}/identity/?${keyOnly.join('&')}${keyOnly.length ? '&' : ''}${params.toString()}`)
-    .set('User-Agent', EveryAuthVersion)
-    .set('Authorization', `Bearer ${profile.token}`);
-
-  return response.body;
+  return getChildrenByTags<IEveryAuthIdentity>(
+    { ...tags, [SERVICE_TAG]: serviceId },
+    `/connector/${serviceId}`,
+    'identity',
+    options
+  );
 };
