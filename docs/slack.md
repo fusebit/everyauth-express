@@ -39,13 +39,37 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("slack", userId);
 ```
 
+The Slack credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "xoxb-...", // Current access token to Slack APIs
+  "native": {
+    "team": {
+      "id": "TDFBLCJV9", // Slack team ID
+      "name": "Fusebit" // Slack team name
+    },
+    "scope": "chat:write,users:read,...", // Scopes that were granted
+    "timestamp": 1649805298115, // Time the credential was established
+    "is_enterprise_install": false, // Is the Slack team an enterprise subscription
+    "enterprise": null, // Enterprise details if the Slack team is an enterprise subscription
+    "token_type": "bot", // Type of the token in native.access_token and accessToken
+    "authed_user": {
+      "id": "UFN96HN1J" // Slack user ID of the authorizing user
+    },
+    "bot_user_id": "U02B5R63C3D", // Slack bot ID 
+    "access_token": "xoxb-...", // Current access token to Slack APIs
+  },
+}
+```
+
 Then, instantiate the Slack client and make the API calls you want:
 
 ```javascript
 import { WebClient } from '@slack/web-api';
 
 // Call Slack API
-const slackClient = new WebClient(credentials.accessToken);
+const slackClient = new WebClient(userCredentials.accessToken);
 await slackClient.chat.postMessage({
   text: 'Hello world from EveryAuth!',
   channel: "#general",
