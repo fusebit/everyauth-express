@@ -20,7 +20,7 @@ app.get('/finished', async (req, res) => {
 
   // Send a message over slack.
   const userCredentials = await everyauth.getIdentity('slack', userId);
-  const slack = new WebClient(userCredentials.accessToken);
+  const slack = new WebClient(userCredentials?.accessToken);
   await slack.chat.postMessage({
     text: `Hello World from EveryAuth to ${userId}`,
     channel: '#demo',

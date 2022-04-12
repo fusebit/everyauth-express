@@ -10,10 +10,10 @@ if [ "${PROFNAME}" == "" ]; then
 fi
 
 mkdir -p test/mock
-fuse profile get --includeCredentials -o json ${PROFNAME} > test/mock/profile.json
+npx @fusebit/cli profile get --includeCredentials -o json ${PROFNAME} > test/mock/profile.json
 
 # Create the profile directory
-fuse profile export ${PROFNAME} | (
+npx @fusebit/cli profile export ${PROFNAME} | (
   HOME=${PWD}/test/mock fuse profile import
 )
 mv test/mock/.fusebit test/mock/profile
