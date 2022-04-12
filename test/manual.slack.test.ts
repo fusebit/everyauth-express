@@ -116,7 +116,7 @@ describe('Manual Test Cases', () => {
 
   test('Manual: Exercise getIdentity(userId)', async () => {
     const userCredentials = await everyauth.getIdentity('slack', 'user-1');
-    const slack = new WebClient(userCredentials.accessToken);
+    const slack = new WebClient(userCredentials?.accessToken);
     const result = await slack.chat.postMessage({
       text: 'Hello World from EveryAuth: getIdentity',
       channel: '#demo',
@@ -132,7 +132,7 @@ describe('Manual Test Cases', () => {
     await Promise.all(
       users.items.map(async (user) => {
         const userIdentity = await everyauth.getIdentity('slack', user.id);
-        const slack = new WebClient(userIdentity.accessToken);
+        const slack = new WebClient(userIdentity?.accessToken);
         const result = await slack.chat.postMessage({
           text: `Hello World from EveryAuth: ${n++}`,
           channel: '#demo',

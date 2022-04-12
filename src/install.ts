@@ -21,7 +21,7 @@ interface IEveryAuthInstall {
  *
  * Used during session.start to see if there's an existing install that matches these tags.
  */
-export const getInstallIdByTags = async (tags: IEveryAuthTagSet): Promise<string> => {
+export const getInstallIdByTags = async (tags: IEveryAuthTagSet): Promise<string | undefined> => {
   const installs = await getChildrenByTags<IEveryAuthInstall>(
     {
       [SERVICE_TAG]: tags.serviceId,
@@ -42,7 +42,7 @@ export const getInstallIdByTags = async (tags: IEveryAuthTagSet): Promise<string
   }
 
   if (installs.items.length == 0) {
-    throw new Error('No credentials found');
+    return undefined;
   }
 
   const installId = installs.items[0].id;

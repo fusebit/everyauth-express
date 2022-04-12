@@ -55,13 +55,13 @@ interface IEveryAuthUserTenantSet {
  * @param identityOrIdsOrTags Either an identity id uniquely identifying a specific identity, a
  * userId that can be used to search for a matching identity, or a set of tags that will be used to
  * search.
- * @return A credential with a valid token.
- * @throws An exception is thrown if no identities are found, or more than one identity is found.
+ * @return A credential with a valid token, or undefined if no matching credential is found.
+ * @throws An exception is thrown if more than one matching identity is found.
  */
 export const getIdentity = async (
   serviceId: string,
   identityOrIdsOrTags: string | IEveryAuthUserTenantSet | IEveryAuthTagSet
-): Promise<IEveryAuthCredential> => {
+): Promise<IEveryAuthCredential | undefined> => {
   let identityId;
 
   // Is this already an identity?
@@ -91,7 +91,7 @@ export const getIdentity = async (
     }
 
     if (identities.items.length == 0) {
-      throw new Error('No credentials found');
+      return undefined;
     }
 
     debug(`${JSON.stringify(identityOrIdsOrTags)}: returning ${identities.items[0].id}`);
@@ -167,8 +167,13 @@ export const deleteIdentity = async (serviceId: string, identityId: string): Pro
     .set('Authorization', `Bearer ${profile.token}`)
     .ok(() => true);
 
-  if (identity.statusCode != 200) {
+  if (identity.statusCode === 404) {
+    // Already deleted.
     return;
+  }
+
+  if (identity.statusCode > 299) {
+    throw new Error(`Loading the requested entity failed with status ${identity.statusCode}`);
   }
 
   // Get the parent install object.

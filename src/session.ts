@@ -2,6 +2,9 @@ import * as superagent from 'superagent';
 
 import debugModule from 'debug';
 const debug = debugModule('everyauth:profile');
+const dbg = ({ userId, tenantId }: { userId?: string; tenantId?: string }, msg: string) => {
+  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: ${msg}`);
+};
 
 import { getAuthedProfile, IProfile } from './profile';
 import EveryAuthVersion from './version';
@@ -15,8 +18,6 @@ const META_INTEGRATION_ID = 'everyauth';
 
 export interface ISession {
   id: string;
-  userId: string;
-  tenantId?: string;
 
   tags: Record<string, string | null>;
 }
@@ -48,13 +49,11 @@ export const start = async (
   };
 
   // Is there an existing matching user?
-  try {
-    payload.installId = await getInstallIdByTags({ serviceId, userId, tenantId });
-    debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: found matching install, reusing ${payload.installId}`);
-  } catch (e) {
-    // No previously issued credentials found
-    debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: No matching installs`);
-  }
+  payload.installId = await getInstallIdByTags({ serviceId, userId, tenantId });
+  dbg(
+    { tenantId, userId },
+    payload.installId ? `Found matching install, reusing ${payload.installId}` : 'No matching install found'
+  );
 
   const response = await superagent
     .post(`${baseUrl}/session`)
@@ -65,7 +64,7 @@ export const start = async (
 
   const sessionId = response.body.id;
 
-  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: created session ${sessionId}`);
+  dbg({ tenantId, userId }, `created session ${sessionId}`);
 
   return `${baseUrl}/session/${sessionId}/start`;
 };
@@ -78,11 +77,6 @@ export const get = async (sessionId: string): Promise<ISession> => {
     .get(`${baseUrl}/session/${sessionId}`)
     .set('Authorization', `Bearer ${profile.token}`)
     .set('User-Agent', EveryAuthVersion);
-
-  // eslint-disable-next-line security/detect-object-injection
-  response.body.userId = response.body.tags[USER_TAG];
-  // eslint-disable-next-line security/detect-object-injection
-  response.body.tenantId = response.body.tags[TENANT_TAG];
 
   return response.body;
 };
@@ -127,7 +121,7 @@ export const commit = async (
   // eslint-disable-next-line security/detect-object-injection
   const tenantId = result.body.tags[TENANT_TAG];
 
-  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: established identity ${identityId}`);
+  dbg({ userId, tenantId }, `Established identity ${identityId}`);
 
   return { identityId, tenantId, userId };
 };

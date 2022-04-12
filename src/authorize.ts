@@ -1,5 +1,7 @@
 import * as express from 'express';
 
+import { USER_TAG, TENANT_TAG } from './constants';
+
 import * as session from './session';
 
 import debugModule from 'debug';
@@ -149,8 +151,15 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
     if (req.query.error) {
       const sessionEntity = await session.get(sessionId);
 
-      dbg(sessionEntity, `Error ${req.query.error}`);
-      return redirect(req, res, sessionEntity);
+      const ids = {
+        // eslint-disable-next-line security/detect-object-injection
+        userId: sessionEntity.tags[USER_TAG] as string,
+        // eslint-disable-next-line security/detect-object-injection
+        tenantId: sessionEntity.tags[TENANT_TAG] as string,
+      };
+
+      dbg(ids, `Error ${req.query.error}`);
+      return redirect(req, res, ids);
     }
 
     // Update the session object if it's changed
