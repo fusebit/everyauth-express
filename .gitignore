@@ -107,3 +107,7 @@ libc/
 test/mock/profile
 test/mock/profile.json
 examples/package-lock.json
+
+# Vim
+.*.swp
+.*.swo
