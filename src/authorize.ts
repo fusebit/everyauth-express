@@ -54,14 +54,6 @@ export interface IEveryAuthOptions {
    * constant for experimentation and testing purposes.
    */
   mapToUserId: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
-
-  /**
-   * Called after the authorization process completed.
-   *
-   * Return false to indicate that the request was responded to, and that EveryAuth should not redirect the
-   * caller to the finishedUrl automatically.
-   */
-  onComplete?: (req: express.Request, res: express.Response, everyCtx: IEveryAuthContext) => Promise<boolean>;
 }
 
 /**
@@ -166,13 +158,6 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
     const { identityId, tenantId, userId } = await session.commit(serviceId, sessionId);
 
     dbg({ userId, tenantId }, `Success ${identityId}`);
-
-    // Future: Call options.onAuthorized with the committed identity object, or just id.
-    if (options.onComplete) {
-      if (!(await options.onComplete(req, res, { finishedUrl: options.finishedUrl, identityId, tenantId, userId }))) {
-        return;
-      }
-    }
 
     dbg({ userId, tenantId }, `Redirect to ${options.finishedUrl}`);
 

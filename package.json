@@ -1,11 +1,9 @@
 {
   "name": "@fusebit/everyauth-express",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Everyauth is the easiest way to call third party APIs from your app without learning OAuth.",
   "main": "libc/index.js",
-  "files": [
-    "libc/**/*"
-  ],
+  "files": ["libc/**/*"],
   "scripts": {
     "build": "tsc -b",
     "test": "jest --testPathIgnorePatterns test/manual",
