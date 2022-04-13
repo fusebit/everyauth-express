@@ -39,6 +39,20 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("reddit", userId);
 ```
 
+The Reddit credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "13...", // Current access token to Reddit APIs
+  "native": {
+    "scope": "read identity", // Scopes that were granted
+    "timestamp": 1649893864701, // Time the credential was established
+    "expires_at": 1649980264701, // Time the access token expires
+    "access_token": "13..." // Current access token to Reddit APIs
+  },
+}
+```
+
 Then, instantiate the Reddit client and make the API calls you want:
 
 ```javascript
@@ -55,7 +69,9 @@ const me = await redditClient.getMe();
 
 ## Configure Reddit service
 
-The shared Reddit OAuth client that EveryAuth provides out of the box supports basic permissions that allow you to call Reddit APIs right away. 
+The shared Reddit OAuth client that EveryAuth provides out of the box supports basic permissions that allow you to call Reddit APIs right away. The following OAuth scopes are included:
+* read
+* identity
 
 If you need to address more advanced scenarios, you need to create your own OAuth client and configure EveryAuth to use it. First [create an OAuth client in Reddit](https://redditclient.readthedocs.io/en/latest/oauth/), and then use the EveyAuth CLI to configure the Reddit service to use it:
 
