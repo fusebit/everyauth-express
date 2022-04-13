@@ -37,8 +37,19 @@ import everyauth from "@fusebit/everyauth-express";
 // Get StackOverflow credentials for a specific user of your app
 const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("stackoverflow", userId);
-// userCredentials.accessToken
-// userCredentials.client_key
+```
+
+The StackOverflow credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "(0wR...", // Current access token to StackOverflow APIs
+  "native": {
+    "timestamp": 1649812976996, // Time the credential was established
+    "client_key": "V)1...", // The Stack Overflow client key
+    "access_token": "(0wR..." // Current access token to StackOverflow APIs
+  },
+}
 ```
 
 ## Configure StackOverflow service
