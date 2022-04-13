@@ -4,6 +4,8 @@ EveryAuth is the easiest way to call Atlassian APIs from your app without learni
 
 ## Authorize access to Atlassian
 
+**NOTE** For the authorization to succeed using the shared OAuth client EveryAuth provides, your Atlassian subscription must contain a Jira and Confluence workspace. 
+
 Add the following route to your Express app using EveryAuth middleware:
 
 ```javascript
@@ -37,6 +39,20 @@ import everyauth from "@fusebit/everyauth-express";
 // Get Atlassian credentials for a specific user of your app
 const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("atlassian", userId);
+```
+
+The Atlassian credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "ey...", // Current access token to Atlassian APIs
+  "native": {
+    "scope": "search:confluence ...", // Scopes that were granted
+    "timestamp": 1649886028422, // Time the credential was established
+    "expires_at": 1649889628422, // Time the access token expires
+    "access_token": "ey..." // Current access token to Atlassian APIs
+  },
+}
 ```
 
 Then, make the API calls you want using the generic superagent HTTP client:
