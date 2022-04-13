@@ -39,6 +39,20 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("gitlab", userId);
 ```
 
+The GitLab credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "97...", // Current access token to GitLab APIs
+  "native": {
+    "scope": "read_user read_api", // Scopes that were granted
+    "timestamp": 1649810029939, // Time the credential was established
+    "expires_at": 1649817229939, // Time the access token expires
+    "access_token": "97..." // Current access token to GitLab APIs
+  },
+}
+```
+
 Then, instantiate the GitLab client and make the API calls you want:
 
 ```javascript
