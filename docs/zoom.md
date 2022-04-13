@@ -37,8 +37,20 @@ import everyauth from "@fusebit/everyauth-express";
 // Get Zoom credentials for a specific user of your app
 const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("zoom", userId);
-// userCredentials.accessToken
 ```
+
+The Zoom credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "ey...", // Current access token to Zoom APIs
+  "native": {
+    "scope": "meeting:read user_info:read", // Scopes that were granted
+    "timestamp": 1649813289772, // Time the credential was established
+    "expires_at": 1649816888772, // Time the access token expires
+    "access_token": "ey..." // Current access token to Zoom APIs
+  },
+}```
 
 ## Configure Zoom service
 
