@@ -48,7 +48,7 @@ The Discord credential returned has the following schema:
     "scope": "identify", // Scopes that were granted
     "webhook": { // The Discord webhook that was registered during the authorization process, if any
       "id": "963595366131974144",
-      "url": "https://discord.com/api/webhooks/963595366131974144/1Ihpih6JnDMlpi3uUCbNX8mnJ6rXuZ5eCx23FGv8NmCtPA9bQc_YHWq7sJL38fEVEAEa",
+      "url": "https://discord.com/api/webhooks/963595366131974144/1I...",
       "name": "fusebit-discord-demo",
       "type": 1,
       "token": "1I...",
