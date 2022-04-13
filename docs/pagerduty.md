@@ -39,6 +39,21 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("pagerduty", userId);
 ```
 
+The PagerDuty credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "pdus+_0X...", // Current access token to PagerDuty APIs
+  "native": {
+    "scope": "openid write", // Scopes that were granted
+    "id_token": "ey...", // The ID token of the authenticated user
+    "timestamp": 1649810924162, // Time the credential was established
+    "expires_at": 1681346924162, // Time the access token expires
+    "access_token": "pdus+_0X..." // Current access token to PagerDuty APIs
+  },
+}
+```
+
 Then, instantiate the PagerDuty client and make the API calls you want:
 
 ```javascript
