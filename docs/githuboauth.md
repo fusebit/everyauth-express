@@ -39,6 +39,19 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("githuboauth", userId);
 ```
 
+The GitHub credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "gho_...", // Current access token to GitHub APIs
+  "native": {
+    "scope": "public_repo,user", // Scopes that were granted
+    "timestamp": 1649809787188, // Time the credential was established
+    "access_token": "gho_..." // Current access token to GitHub APIs
+  },
+}
+```
+
 Then, instantiate the GitHub client and make the API calls you want:
 
 ```javascript
