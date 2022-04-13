@@ -285,7 +285,7 @@ npm install @fusebit/everyauth-express --save
 
 Below is the synopsis of the methods and types the module offers. 
 
-#### authorize(serviceName, options)
+#### authorize(serviceId, options)
 
 This is Express middleware that defines the necessary endpoints on your web application that enable you to take a browser user through an authorization flow for a particular service. To start the flow, you need to direct the browser to the endpoint where this middleware was installed. When authorization flow has finished, control is returned to your application by redirecting to the `finishedUrl` URL you specified in the middleware's configuration. The query parametrs of the final redirect indicate the operation status. 
 
@@ -318,8 +318,8 @@ The `finishedUrl` may receive the following query string parameters on completio
 
 | name | type | description |
 |------|------|-------------|
-| `serviceName` | string | The name of the remote service to get the authorization for from the user. |
-| `options` | [EveryAuthOptions](#object-everyauthoptions) | Options controlling the behavior of the middleware. |
+| `serviceId` | string | The name of the remote service to get the authorization for from the user. |
+| `options` | [EveryAuthOptions](#everyauthoptions) | Options controlling the behavior of the middleware. |
 
 #### getIdentity(serviceId, identityOrIdsOrTags)
 
