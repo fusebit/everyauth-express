@@ -39,6 +39,22 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("sfdc", userId);
 ```
 
+The Salesforce credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "00D4...", // Current access token to Salesforce APIs
+  "native": {
+    "id": "https://login.salesforce.com/id/00D4x0000031lIEEAY/00...",
+    "scope": "refresh_token api", // Scopes that were granted
+    "timestamp": 1649812195558, // Time the credential was established
+    "expires_at": 1649815795558, // Time the credential was established
+    "access_token": "00D4...", // Current access token to Salesforce APIs
+    "instance_url": "https://fusebit-dev-ed.my.salesforce.com"
+  },
+}
+```
+
 Then, instantiate the Salesforce client and make the API calls you want:
 
 ```javascript
