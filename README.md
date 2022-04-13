@@ -79,6 +79,7 @@ npm install --save @fusebit/everyauth-express
 ```
 
 Ensure you install the official Slack SDK for our example:
+
 ```bash
 npm install --save @slack/web-api
 ```
@@ -162,12 +163,14 @@ Don't see the service you are looking for? We are constantly adding support for 
 
 EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job and need to authorize those calls. The credentials are established when you run `everyauth init` and stored in the `.fusebit/settings.json` file on disk.
 
-Both the CLI and express middleware similarly locate credentials, in priority order:
+The express middleware locates credentials in the following way, in priority order:
 
-1. Command line options to the CLI or programmatically in code.
+1. Programmatically through code.
 2. JSON in the `EVERYAUTH_ACCOUNT_JSON` environment variable.
 3. The `EVERYAUTH_ACCOUNT_PATH` environment variable points to the `settings.json` file in a directory.
 4. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
+
+The EveryAuth CLI is always looking for credentials in the `~/.fusebit/settings.json` file created when you run `everyauth init`. You can copy the `~/.fusebit` directory between machines to access the same underlying account. 
 
 ## Identity mapping
 
@@ -187,7 +190,7 @@ router.use(
 
 The `mapToUserId` is a customization point you need to override to set the value of the _fusebit.userId_ tag for the identity that is established in the authorization process (in the example above, to Slack). This value would be typically derived from the authentication mechanism you are using to protect the endpoint above. For example, it could come from a cookie-based session.
 
-The `mapToTenantId` is used to set the value of the _fusebit.tenantId_ tag for the new identity. Your application model and authentication context could imply this value. For example, the specific authenticated user of your app may be part of a given company or organization who is the tenant of your app. If you don't provide an explicit value for the _fusebit.tenantId_ tag, its value will be the same value you provided for _fusebit.userId_.
+The `mapToTenantId` is used to set the value of the _fusebit.tenantId_ tag for the new identity. The concept of a tenant is specific to your application. For example, the specific authenticated user of your app may be part of a particular company or organization which is the tenant of your app. If you don't provide an explicit value for the _fusebit.tenantId_ tag, its value will be the same value you provided for _fusebit.userId_.
 
 Once the authorization process completes, the resulting identity is durably and securely stored by EveryAuth and associated with the respective tags. Later on in your app, you can look up the identity using the value of the _fusebit.userId_ tag:
 
