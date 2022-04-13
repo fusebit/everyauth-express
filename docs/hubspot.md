@@ -39,6 +39,19 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("hubspot", userId);
 ```
 
+The HubSpot credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "CJ...", // Current access token to HubSpot APIs
+  "native": {
+    "timestamp": 1649810496650, // Time the credential was established
+    "expires_at": 1649812296650, // Time the access token expires
+    "access_token": "CJ..." // Current access token to HubSpot APIs
+  },
+}
+```
+
 Then, instantiate the HubSpot client and make the API calls you want:
 
 ```javascript
