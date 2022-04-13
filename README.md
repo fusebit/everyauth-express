@@ -70,12 +70,17 @@ Then, create a free [Fusebit](https://fusebit.io) account to use the shared Slac
 everyauth init
 ```
 
-The command will create the `.fusebit` directory with details of your Fusebit account, including a generated private key. Do not commit this directory to your source control! If you are using Git, add .fusebit to your .gitignore.
+The command will create the `.fusebit` directory with details of your Fusebit account, including a generated private key. Do not commit this directory to your source control! If you are using Git, add `.fusebit` to your .gitignore.
 
 Then, add the EveryAuth Express middleware dependency to your app:
 
 ```bash
 npm install --save @fusebit/everyauth-express
+```
+
+Ensure you install the official Slack SDK for our example:
+```bash
+npm install --save @slack/web-api
 ```
 
 In your Express app, add a route that allows your users to grant your application authorization to call Slack on their behalf:
@@ -160,13 +165,13 @@ EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job a
 Both the CLI and express middleware similarly locate credentials, in priority order:
 
 1. Command line options to the CLI or programmatically in code.
-2. Base64-encoded JSON in the `EVERYAUTH_ACCOUNT_JSON` environment variable.
+2. JSON in the `EVERYAUTH_ACCOUNT_JSON` environment variable.
 3. The `EVERYAUTH_ACCOUNT_PATH` environment variable points to the `settings.json` file in a directory.
 4. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
 
 ## Identity mapping
 
-One of the features of EveryAuth is the durable and secure storage of your users' _identities_. You can retrieve those identities using _tags_ representing concepts native to your app, for example, a user ID, a project ID, or a tenant ID.
+One of the features of EveryAuth is the durable and secure storage of your users' _identities_. You can retrieve those identities using _tags_ representing concepts native to your app. For example, a user ID, a project ID, or a tenant ID.
 
 To enable looking up identities using tags, you must first associate a tag with an identity. Fusebit defines two types of commonly used tags: _fusebit.userId_, and _fusebit.tenantId_. You can associate an identity with those tags as part of the EveryAuth middleware configuration:
 
@@ -217,7 +222,7 @@ everyauth service set slack \
   --clientSecret "{your-client-secret}
 ```
 
-EveryAuth durably stores configuration parameters of a service as part of your Fusebit account.
+EveryAuth durably stores the configuration parameters of a service as part of your Fusebit account.
 
 You can check the current configuration of a service with `everyauth service get {name}` and list available services with `everyauth service ls`.
 
@@ -233,7 +238,7 @@ Below is a short synopsis of the CLI commands. For detailed options, specify the
 
 #### everyauth init
 
-Performs one-time initialization of EveryAuth on a developer machine. This command will create a free Fusebit account and store the credentials necessary to access it in your home directory's `~/.fusebit/settings.json` file. Keep this file secret. You can also move this file to a new machine from which you want to access your EveryAuth configuration, like a CI/CD box or a second development machine. 
+Performs one-time initialization of EveryAuth on a developer machine. This command will create a free Fusebit account and store the credentials necessary to access it in your home directory's `~/.fusebit/settings.json` file. Keep this file secret. You can also move the `.fusebit` directory to a new machine from which you want to access your EveryAuth configuration, like a CI/CD box or a second development machine. 
 
 #### everyauth service ls
 
@@ -423,7 +428,7 @@ You need a [Fusebit](https://fusebit.io) account for three reasons:
 
 1. To ensure your users' identities are stored securely and isolated from identities of other apps' users.
 1. To ensure your OAuth client configuration is protected.
-1. To enable the use of the shared OAuth clients provided by Everyauth.
+1. To enable the use of the shared OAuth clients provided by EveryAuth.
 
 #### What is Fusebit anyway?
 
