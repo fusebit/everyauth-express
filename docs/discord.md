@@ -39,6 +39,32 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("discord", userId);
 ```
 
+The Discord credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "69...", // Current access token to Discord APIs
+  "native": {
+    "scope": "identify", // Scopes that were granted
+    "webhook": { // The Discord webhook that was registered during the authorization process, if any
+      "id": "963595366131974144",
+      "url": "https://discord.com/api/webhooks/963595366131974144/1Ihpih6JnDMlpi3uUCbNX8mnJ6rXuZ5eCx23FGv8NmCtPA9bQc_YHWq7sJL38fEVEAEa",
+      "name": "fusebit-discord-demo",
+      "type": 1,
+      "token": "1I...",
+      "avatar": "54c23eb7da17e994faa8dca4c7d9bfe4",
+      "guild_id": "852374136687820832",
+      "channel_id": "852374137119703051",
+      "application_id": "918713218434748416"
+    },
+    "timestamp": 1649809438178, // Time the credential was established
+    "expires_at": 1650414238178, // Time the access tokene expires
+    "access_token": "69...", // Current access token to Discord APIs
+    "applicationId": "7c..." // Discord application ID
+  },
+}
+```
+
 Then, make the API calls you want using the generic superagent HTTP client:
 
 ```javascript
