@@ -64,18 +64,23 @@ First, install the EveryAuth CLI:
 npm install -g @fusebit/everyauth-cli
 ```
 
-Then, create a free [Fusebit](https://fusebit.io) account so that you can use the shared Slack OAuth client. In the root directory of your Express application, run:
+Then, create a free [Fusebit](https://fusebit.io) account to use the shared Slack OAuth client. In the root directory of your Express application, run:
 
 ```bash
-everynode init
+everyauth init
 ```
 
-The command will create the `.fusebit` directory with details of your Fusebit account, including a generated private key. Do not commit this directory to your source control! If you are using Git, add .fusebit to your .gitignore.
+The command will create the `.fusebit` directory with details of your Fusebit account, including a generated private key. Do not commit this directory to your source control! If you are using Git, add `.fusebit` to your .gitignore.
 
 Then, add the EveryAuth Express middleware dependency to your app:
 
 ```bash
 npm install --save @fusebit/everyauth-express
+```
+
+Ensure you install the official Slack SDK for our example:
+```bash
+npm install --save @slack/web-api
 ```
 
 In your Express app, add a route that allows your users to grant your application authorization to call Slack on their behalf:
@@ -147,26 +152,26 @@ Don't see the service you are looking for? We are constantly adding support for 
 
 ## Concepts
 
-- **User** - A person using your web application. This could be you, your friends, or your customers.
-- **Tenant** - A large multi-user system uses a concept of a _tenant_ to identify the larger organization a particular _user_ may belong to. For example, your _user_ might be Janet, but the _tenant_ might be Sonicity, a large multinational corporation. Generally, _users_ authenticate on behalf of _tenants_, though for single-user environments the _user_ and the _tenant_ might be effectively the same.
+- **User** - A person using your web application; it could be you, your friends, or your customers.
+- **Tenant** - A large multi-user system uses a _tenant_ concept to identify the larger organization to which a particular _user_ may belong. For example, your _user_ might be Janet, but the _tenant_ might be Sonicity, a large multinational corporation. Generally, _users_ authenticate on behalf of _tenants_, though for single-user environments the _user_ and the _tenant_ might be effectively the same.
 - **Service** - A service is a remote SaaS your users are already using, upon which you would like to act on their behalf. For example, your application may modify a HubSpot record, send a message to Slack, or update a Salesforce company on behalf of your application users.
 - **Identity** - The necessary tokens, refresh tokens, or other secrets that are used to authorize API calls to a _service_ on behalf of a _user_.
-- **Tag** - A key-value pair, for example ("userId", "user-123"). A number of tags can be associated with an _identity_. EveryAuth enables you to look up an _identity_ or _identities_ that are associated wth a specific set of _tags_.
+- **Tag** - A key-value pair, for example ("userId", "user-123"). A number of tags can be associated with an _identity_. EveryAuth enables you to lookup an _identity_ or _identities_ associated with a specific set of _tags_.
 
 ## Authentication
 
-EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job, and need to authorize those calls. The credentials to do so are established when you run `everyauth init` and stored in the `.fusebit/settings.json` file on disk.
+EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job and need to authorize those calls. The credentials are established when you run `everyauth init` and stored in the `.fusebit/settings.json` file on disk.
 
-Both the CLI and express middleware locate credentials in a similar manner, in priorty order:
+Both the CLI and express middleware similarly locate credentials, in priority order:
 
 1. Command line options to the CLI or programmatically in code.
-1. Base64-encoded JSON in the `EVERYAUTH_ACCOUNT_JSON` environment variable.
-1. The `settings.json` file in a directory pointed to by the `EVERYAUTH_ACCOUNT_PATH` environment variable.
-1. The `settings.json` file in the `.fusebit` subdirectory of the current directory or closest parent directory.
+2. JSON in the `EVERYAUTH_ACCOUNT_JSON` environment variable.
+3. The `EVERYAUTH_ACCOUNT_PATH` environment variable points to the `settings.json` file in a directory.
+4. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
 
 ## Identity mapping
 
-One of the features of EveryAuth is durable and secure storage of your users' _identities_. You can retrieve those identities at any point using _tags_ representing concepts native to your app, for example a user ID, a project ID, or a tenant ID.
+One of the features of EveryAuth is the durable and secure storage of your users' _identities_. You can retrieve those identities using _tags_ representing concepts native to your app. For example, a user ID, a project ID, or a tenant ID.
 
 To enable looking up identities using tags, you must first associate a tag with an identity. Fusebit defines two types of commonly used tags: _fusebit.userId_, and _fusebit.tenantId_. You can associate an identity with those tags as part of the EveryAuth middleware configuration:
 
@@ -182,7 +187,7 @@ router.use(
 
 The `mapToUserId` is a customization point you need to override to set the value of the _fusebit.userId_ tag for the identity that is established in the authorization process (in the example above, to Slack). This value would be typically derived from the authentication mechanism you are using to protect the endpoint above. For example, it could come from a cookie-based session.
 
-The `mapToTenantId` is used set the value of the _fusebit.tenantId_ tag for the new identity. This value could be implied by your application model and authentication context. For example, the specific authenticated user of your app may be part of a given company or organization who is the tenant of you app. If you don't provide an explicit value for the _fusebit.tenantId_ tag, its value will be set to the same value you provided for _fusebit.userId_.
+The `mapToTenantId` is used to set the value of the _fusebit.tenantId_ tag for the new identity. Your application model and authentication context could imply this value. For example, the specific authenticated user of your app may be part of a given company or organization who is the tenant of your app. If you don't provide an explicit value for the _fusebit.tenantId_ tag, its value will be the same value you provided for _fusebit.userId_.
 
 Once the authorization process completes, the resulting identity is durably and securely stored by EveryAuth and associated with the respective tags. Later on in your app, you can look up the identity using the value of the _fusebit.userId_ tag:
 
@@ -200,15 +205,15 @@ const slackCredentials = everyauth.getIdentity("slack", {
 });
 ```
 
-The `getIdentity` function will return exactly one matching identity or _undefined_ if no matching identity is found. If there is more than one matching identity, an exception will be thrown.
+The `getIdentity` function will return exactly one matching identity or _undefined_ if no matching identity is found. An exception will be thrown if there is more than one matching identity.
 
-In cases where you expect multiple identities matching the search critieria (for example, multiple identities with _fusebit.tenantId_ tag set to "company-contoso"), use the `getIdentities` function instead.
+In cases where you expect multiple identities matching the search criteria (for example, multiple identities with _fusebit.tenantId_ tag set to "company-contoso"), use the `getIdentities` function instead.
 
 ## Service configuration
 
 EveryAuth comes with shared OAuth clients to services it supports so that you can get up and running quickly. Those clients have limited permissions. Once the needs of your app exceed those permissions, you will need to create your own OAuth client in the respective service and configure EveryAuth to use it.
 
-Service confguration is performend using the EveryAuth CLI. Documentation of specific services talks about service-specific parameters that need to be set, but in a typical case you would need to specify your own _client ID_, _client secret_, and _scope_, for example:
+Service configuration is performed using the EveryAuth CLI. Documentation of specific services talks about service-specific parameters that need to be set. Still, in a typical case you would need to specify your own _client ID_, _client secret_, and _scope_, for example:
 
 ```bash
 everyauth service set slack \
@@ -217,13 +222,13 @@ everyauth service set slack \
   --clientSecret "{your-client-secret}
 ```
 
-Configuration parameters of a service are durably stored by EveryAuth as part of your Fusebit account.
+EveryAuth durably stores the configuration parameters of a service as part of your Fusebit account.
 
-You can check the current configuration of a service with `everyauth service get {name}`, and list available services with `everyauth service ls`.
+You can check the current configuration of a service with `everyauth service get {name}` and list available services with `everyauth service ls`.
 
 ## EveryAuth CLI reference
 
-The EveryAuth CLI is used to manage the configuration of the services you want to authorize to from your app. You can install the CLI with:
+The EveryAuth CLI manages the configuration of the services you want to authorize from your app. You can install the CLI with:
 
 ```bash
 npm install -g @fusebit/everyauth-cli
@@ -233,7 +238,7 @@ Below is a short synopsis of the CLI commands. For detailed options, specify the
 
 #### everyauth init
 
-Performs one-time initialization of EveryAuth on a developer machine. This command will create a free Fusebit account and store the credentials necessary to access it in the `~/.fusebit/settings.json` file in your home directory. Keep this file secret. You can also move this file to a new machine where you want to access your EveryAuth configuration from, like a CI/CD box or a second development machine. 
+Performs one-time initialization of EveryAuth on a developer machine. This command will create a free Fusebit account and store the credentials necessary to access it in your home directory's `~/.fusebit/settings.json` file. Keep this file secret. You can also move the `.fusebit` directory to a new machine from which you want to access your EveryAuth configuration, like a CI/CD box or a second development machine. 
 
 #### everyauth service ls
 
@@ -241,11 +246,11 @@ Lists services available to use from your app. See the [Supported services](#sup
 
 #### everyauth service set
 
-Configures a specific service. This can be used to specify your custom OAuth client ID or secret or a custom set of scopes you want request the authorization for. See the [Supported services](#supported-services) section for details on the usage of individual services. 
+Configures a specific service. This can be used to specify your custom OAuth client ID or secret or a custom set of scopes you want to request the authorization for. See the [Supported services](#supported-services) section for details on the usage of individual services. 
 
 #### everyauth service get
 
-Get the current configuration of a specific service as well as the OAuth callback URL necessary to set up a custom OAuth application with that service. 
+Get the current configuration of a specific service and the OAuth callback URL necessary to set up a custom OAuth application with that service. 
 
 #### everyauth service add
 
@@ -261,15 +266,15 @@ Get logs of an existing service.
 
 #### everyauth identity ls
 
-List existing identitities for a specific service (users who authorized your app to use the service on their behalf).
+List existing identities for a specific service (users who authorized your app to use the service on their behalf).
 
 #### everyauth identity get
 
-Get details of a specific identity of a specific service.
+Get details of a specific identity of a particular service.
 
 #### everyauth identity rm
 
-Remove a specific identity of a specific service. 
+Remove a specific identity of a particular service. 
 
 #### everyauth version
 
@@ -287,7 +292,7 @@ Below is the synopsis of the methods and types the module offers.
 
 #### authorize(serviceId, options)
 
-This is Express middleware that defines the necessary endpoints on your web application that enable you to take a browser user through an authorization flow for a particular service. To start the flow, you need to direct the browser to the endpoint where this middleware was installed. When authorization flow has finished, control is returned to your application by redirecting to the `finishedUrl` URL you specified in the middleware's configuration. The query parametrs of the final redirect indicate the operation status. 
+An Express middleware that defines the necessary endpoints on your web application that enable you to take a browser user through an authorization flow for a particular service. To start the flow, you need to direct the browser to the endpoint where this middleware was installed. When authorization flow has finished, control is returned to your application by redirecting to the `finishedUrl` URL you specified in the middleware's configuration. The query parameters of the final redirect indicate the operation status. 
 
 **NOTE** The endpoint you would add this middleware to is typically authenticated using the same mechanisms as other browser-facing endpoints of your app. 
 
@@ -318,14 +323,14 @@ The `finishedUrl` may receive the following query string parameters on completio
 
 | name | type | description |
 |------|------|-------------|
-| `serviceId` | string | The name of the remote service to get the authorization for from the user. |
+| `serviceId` | string | The name of the remote service to get authorization from the user. |
 | `options` | [EveryAuthOptions](#everyauthoptions) | Options controlling the behavior of the middleware. |
 
 #### getIdentity(serviceId, identityOrIdsOrTags)
 
-Returns the identity of a specific user and service, including current access token that can be used to call APIs of the service. This method uses search criteria specific to your application (e.g. userId or tenantId) to look up a unique, matching identity in EveryAuth. It also ensures the access token is current and refreshes it if needed. 
+Returns the identity of a specific user and service, including the current access token that can be used to call APIs of the service. This method uses search criteria specific to your application (e.g., userId or tenantId) to look up a unique, matching identity in EveryAuth. It also ensures the access token is current and refreshes it if needed. 
 
-If there is more than one identity matching the search criteria, this method will throw an exception. If there are no matching identities, it will return *undefined*. It will only return an identity if exactly one match is found.  
+If more than one identity matches the search criteria, this method will throw an exception. If there are no matching identities, it will return *undefined*. It will only return an identity if exactly one match is found. 
 
 ```javascript
 import everyauth from "@fusebit/everyauth-express";
@@ -337,22 +342,22 @@ const slackCredentials = await everyauth.getIdentity("slack", userId);
 });
 ```
 
-See the [Supported services](#supported-services) section for details on the contents of the return value from `getIdentity`. All return values will have the access token normalized to `userCredentials.accessToken` though.  
+See the [Supported services](#supported-services) section for details on the contents of the return value from `getIdentity`. All return values will have the access token normalized to `userCredentials.accessToken`.  
 
 ##### Parameters  <!-- omit in toc -->
 
 | name | type | description |
 |------|------|-------------|
-| `serviceId` | string | The name of the remote service the user should be authenicated with. |
+| `serviceId` | string | The name of the remote service the user should be authenticated with. |
 | `identityOrIdsOrTags` | string&nbsp;\|&nbsp;<br/>Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null<br/>&gt; | If a `string` is supplied, this is treated as either as a unique identity id in the EveryAuth system, or the value of the user id tag.<br/><br/>If the parameter is an object, it is treated as a set of tags the returned identity must have. |
 
 ##### Return  <!-- omit in toc -->
 
-Returns an object of type [IEveryAuthCredential](#ieveryauthcredential) with an `accessToken` property guaranteed to be current, or `undefined` if no matching identities are found.
+Returns an object of type [IEveryAuthCredential](#ieveryauthcredential) with an `accessToken` property guaranteed to be current or `undefined` if no matching identities are found.
 
 #### getIdentities(serviceId, idsOrTags, [options])
 
-Returns all identities matching the specified search criteria. For example, you can query EveryAuth for all identities of a service that have a specific value of the *fusebit.tenantId*. This method supports paging and continuation. 
+Returns all identities matching the specified search criteria. For example, you can query EveryAuth for all service identities that have a specific value of the *fusebit.tenantId*. This method supports paging and continuation. 
 
 ```javascript
 import everyauth from "@fusebit/everyauth-express";
@@ -373,7 +378,7 @@ for (const item of identities.items) {
 |------|------|-------------|
 | `serviceId` | string | The name of the remote service the user should be authenicated with. |
 | `tags` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null| A set of tags returned identities must have. |
-| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` in order to get a next page of matching identities. Specify the `pageSize` property to indicte the desired maximum number of results to return. |
+| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` to get a next page of matching identities. Specify the `pageSize` property to indicate the desired maximum number of results to return. |
 
 ##### Return  <!-- omit in toc -->
 
@@ -388,7 +393,7 @@ for (const item of identities.items) {
 |------|------|-------------|
 | `finishedUrl` | string | The absolute or relative path to send the user to after completing the authorization flow. |
 | `mapToUserId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string user id to identify the user in your system and later allow querying EveryAuth for credentials owned by that user. |
-| `mapToTenantId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string tenant id to identify the tenant in your system, and allow querying EveryAuth for credentials owned by that tenant. If you don't specify this callback, the value of the tenant id will be set to the same value as user id. |
+| `mapToTenantId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string tenant id to identify the tenant in your system, and allow querying EveryAuth for credentials owned by that tenant. If you don't specify this callback, the value of the tenant id will be set to the same value as the user id. |
 
 #### IEveryAuthCredential
 
@@ -401,7 +406,7 @@ for (const item of identities.items) {
 
 | name | type | description |
 |------|------|-------------|
-| `id` | string | A unique string identifying this particular idenitity that can be used in a call to `getIdentity`. |
+| `id` | string | A unique string identifying this particular identity that can be used in a call to `getIdentity`. |
 | `tags` | object | A set of tags associated with this identity. |
 | `dateModified` | string (optional) | The date the identity was last modified. |
 
@@ -409,11 +414,11 @@ for (const item of identities.items) {
 
 #### What problems does EveryAuth solve that OAuth does not?
 
-In addition to abstrating away the OAuth implementation quirks of various APIs, EveryAuth does a few extra things that pure OAuth does not:
+In addition to abstracting away the OAuth implementation quirks of various APIs, EveryAuth does a few extra things that pure OAuth does not:
 
-- Provides out of the box, shared OAuth clients with basic permissions to get you started quickly.
+- Provides out-of-the-box, shared OAuth clients with basic permissions to get you started quickly.
 - Implements durable and secure storage of OAuth credentials of your users so that you don't have to.
-- Suports flexible identity mapping to reference credentials using concepts native to your app, so that you don't need to touch your databases.
+- Supports flexible identity mapping to reference credentials using concepts native to your app so that you don't need to touch your databases.
 - Implements automatic token refresh when needed.
 - Provides proactive monitoring and alerting for expired or revoked credentials (coming soon).
 
@@ -423,11 +428,11 @@ You need a [Fusebit](https://fusebit.io) account for three reasons:
 
 1. To ensure your users' identities are stored securely and isolated from identities of other apps' users.
 1. To ensure your OAuth client configuration is protected.
-1. To enable the use of the shared OAuth clients provided by Everynode.
+1. To enable the use of the shared OAuth clients provided by EveryAuth.
 
 #### What is Fusebit anyway?
 
-[Fusebit](https://fusebit.io) is a code-first integration platform that helps developers add integrations to their apps. Authorization to third party services and management of your users' credentials is a fundamental feature of the platform which we are making available to developers through EveryAuth. Follow us on Twitter [@fusebitio](https://twitter.com/fusebitio) for great developer content, and check out some cool OSS projects at [github.com/fusebit](https://github.com/fusebit).
+[Fusebit](https://fusebit.io) is a code-first integration platform that helps developers add integrations to their apps. Authorization to third-party services and management of your users' credentials is a fundamental feature of the platform, which we are making available to developers through EveryAuth. Follow us on Twitter [@fusebitio](https://twitter.com/fusebitio) for great developer content, and check out some cool OSS projects at [github.com/fusebit](https://github.com/fusebit).
 
 #### What if you don't support the service I need?
 
