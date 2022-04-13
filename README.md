@@ -142,7 +142,6 @@ EveryAuth supports authorization to the following APIs out of the box:
 [Salesforce](docs/sfdc.md)  
 [Slack](docs/slack.md)  
 [StackOverflow](docs/stackoverflow.md)  
-[Zoom](docs/zoom.md)
 
 Don't see the service you are looking for? We are constantly adding support for new services. [Check if yours is in the backlog or file a request for one](https://github.com/fusebit/everyauth-express/issues).
 
@@ -183,24 +182,7 @@ router.use(
 
 The `mapToUserId` is a customization point you need to override to set the value of the _fusebit.userId_ tag for the identity that is established in the authorization process (in the example above, to Slack). This value would be typically derived from the authentication mechanism you are using to protect the endpoint above. For example, it could come from a cookie-based session.
 
-The `mapToTenantId` is used set the value of the _fusebit.tenantId_ tag for the new identity. This value could be implied by your application model and authentication context. For example, the specific authenticated user of your app may be part of a given company or organization who is the tenant of you app.
-
-The tag concept is extensible - you can define any tags that make sense to you, and associate them with identities using the more advanced `onAuthorized` callback:
-
-```javascript
-router.use(
-  "/slack",
-  everyauth.authorize("slack", {
-    onAuthorized: async (res, res, ctx) => {
-      ctx.identity.tags = {
-        "fusebit.userId": "user-123",
-        "fusebit.tenantId": "company-contoso",
-        subscriptionLevel: "gold",
-      };
-    },
-  })
-);
-```
+The `mapToTenantId` is used set the value of the _fusebit.tenantId_ tag for the new identity. This value could be implied by your application model and authentication context. For example, the specific authenticated user of your app may be part of a given company or organization who is the tenant of you app. If you don't provide an explicit value for the _fusebit.tenantId_ tag, its value will be set to the same value you provided for _fusebit.userId_.
 
 Once the authorization process completes, the resulting identity is durably and securely stored by EveryAuth and associated with the respective tags. Later on in your app, you can look up the identity using the value of the _fusebit.userId_ tag:
 
@@ -214,13 +196,13 @@ You can also look up an identity that has multiple tags:
 ```javascript
 const slackCredentials = everyauth.getIdentity("slack", {
   "fusebit.tenantId": "company-contoso",
-  role: "project-coordinator",
+  "fusebit.userId": "user-123"
 });
 ```
 
 The `getIdentity` function will return exactly one matching identity or _undefined_ if no matching identity is found. If there is more than one matching identity, an exception will be thrown.
 
-In cases where you expect multiple identities matching the search critieria (for example, all identities at the _gold_ subscription level), use the `getIdentities` function instead.
+In cases where you expect multiple identities matching the search critieria (for example, multiple identities with _fusebit.tenantId_ tag set to "company-contoso"), use the `getIdentities` function instead.
 
 ## Service configuration
 
@@ -241,11 +223,187 @@ You can check the current configuration of a service with `everyauth service get
 
 ## EveryAuth CLI reference
 
-TODO
+The EveryAuth CLI is used to manage the configuration of the services you want to authorize to from your app. You can install the CLI with:
+
+```bash
+npm install -g @fusebit/everyauth-cli
+```
+
+Below is a short synopsis of the CLI commands. For detailed options, specify the command name followed by `--help`. 
+
+#### everyauth init
+
+Performs one-time initialization of EveryAuth on a developer machine. This command will create a free Fusebit account and store the credentials necessary to access it in the `~/.fusebit/settings.json` file in your home directory. Keep this file secret. You can also move this file to a new machine where you want to access your EveryAuth configuration from, like a CI/CD box or a second development machine. 
+
+#### everyauth service ls
+
+Lists services available to use from your app. See the [Supported services](#supported-services) section for details on the usage of individual services. 
+
+#### everyauth service set
+
+Configures a specific service. This can be used to specify your custom OAuth client ID or secret or a custom set of scopes you want request the authorization for. See the [Supported services](#supported-services) section for details on the usage of individual services. 
+
+#### everyauth service get
+
+Get the current configuration of a specific service as well as the OAuth callback URL necessary to set up a custom OAuth application with that service. 
+
+#### everyauth service add
+
+Add a new service. 
+
+#### everyauth service rm
+
+Remove existing service.
+
+#### everyauth service log
+
+Get logs of an existing service. 
+
+#### everyauth identity ls
+
+List existing identitities for a specific service (users who authorized your app to use the service on their behalf).
+
+#### everyauth identity get
+
+Get details of a specific identity of a specific service.
+
+#### everyauth identity rm
+
+Remove a specific identity of a specific service. 
+
+#### everyauth version
+
+Display CLI version.
 
 ## EveryAuth Express middleware reference
 
-TODO
+The EveryAuth Express middleware and module can be installed in your Node.js project with:
+
+```bash
+npm install @fusebit/everyauth-express --save
+```
+
+Below is the synopsis of the methods and types the module offers. 
+
+#### authorize(serviceId, options)
+
+This is Express middleware that defines the necessary endpoints on your web application that enable you to take a browser user through an authorization flow for a particular service. To start the flow, you need to direct the browser to the endpoint where this middleware was installed. When authorization flow has finished, control is returned to your application by redirecting to the `finishedUrl` URL you specified in the middleware's configuration. The query parametrs of the final redirect indicate the operation status. 
+
+**NOTE** The endpoint you would add this middleware to is typically authenticated using the same mechanisms as other browser-facing endpoints of your app. 
+
+```javascript
+import everyauth from "@fusebit/everyauth-express";
+
+router.use(
+  // The endpoint you need to redirect the user to to start the authorization flow
+  "/slack", 
+  // The service you want get the authorization for, in this case Slack
+  everyauth.authorize("slack", { 
+    // The endpoint of your app where control will be returned afterwards:
+    finishedUrl: "/slack/finished", 
+    // The user ID of the authenticated user the credentials will be associated with
+    mapToUserId: async (req) => "user-123", // req.user.id in production
+  })
+);
+```
+
+The `finishedUrl` may receive the following query string parameters on completion:
+
+| name | type | description |
+|------|------|-------------|
+| `error` | string  (optional) | A short description of the error that occurred, if any. |
+| `errorDescription` | string (optional) | A longer description of the error that occurred, if any. |
+
+##### Parameters  <!-- omit in toc -->
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string | The name of the remote service to get the authorization for from the user. |
+| `options` | [EveryAuthOptions](#everyauthoptions) | Options controlling the behavior of the middleware. |
+
+#### getIdentity(serviceId, identityOrIdsOrTags)
+
+Returns the identity of a specific user and service, including current access token that can be used to call APIs of the service. This method uses search criteria specific to your application (e.g. userId or tenantId) to look up a unique, matching identity in EveryAuth. It also ensures the access token is current and refreshes it if needed. 
+
+If there is more than one identity matching the search criteria, this method will throw an exception. If there are no matching identities, it will return *undefined*. It will only return an identity if exactly one match is found.  
+
+```javascript
+import everyauth from "@fusebit/everyauth-express";
+
+// Get Slack credentials of the user of your app
+const userId = "user-123"; // req.user.id in production
+const slackCredentials = await everyauth.getIdentity("slack", userId);
+// Use slackCredentials.accessToken to call the Slack API
+});
+```
+
+See the [Supported services](#supported-services) section for details on the contents of the return value from `getIdentity`. All return values will have the access token normalized to `userCredentials.accessToken` though.  
+
+##### Parameters  <!-- omit in toc -->
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string | The name of the remote service the user should be authenicated with. |
+| `identityOrIdsOrTags` | string&nbsp;\|&nbsp;<br/>Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null<br/>&gt; | If a `string` is supplied, this is treated as either as a unique identity id in the EveryAuth system, or the value of the user id tag.<br/><br/>If the parameter is an object, it is treated as a set of tags the returned identity must have. |
+
+##### Return  <!-- omit in toc -->
+
+Returns an object of type [IEveryAuthCredential](#ieveryauthcredential) with an `accessToken` property guaranteed to be current, or `undefined` if no matching identities are found.
+
+#### getIdentities(serviceId, idsOrTags, [options])
+
+Returns all identities matching the specified search criteria. For example, you can query EveryAuth for all identities of a service that have a specific value of the *fusebit.tenantId*. This method supports paging and continuation. 
+
+```javascript
+import everyauth from "@fusebit/everyauth-express";
+
+// Get Slack identities of all users from company Contoso
+const tenantId = "company-contoso"; 
+const identities = await everyauth.getIdentities("slack", { "fusebit.tenantId": tenantId });
+
+for (const item of identities.items) {
+  const credentials = await everyauth.getIdentity("slack", item.id);
+  // credentials.accessToken
+}
+```
+
+##### Parameters  <!-- omit in toc -->
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string | The name of the remote service the user should be authenicated with. |
+| `tags` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null| A set of tags returned identities must have. |
+| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` in order to get a next page of matching identities. Specify the `pageSize` property to indicte the desired maximum number of results to return. |
+
+##### Return  <!-- omit in toc -->
+
+| name | type | description |
+-------|------|-------------|
+| `items` | [IEveryAuthIdentity](#ieveryauthidentity)[] | An array of EveryAuth credential objects. |
+| `next` | string \| undefined | If present, indicates that additional results may be obtained by supplying the `next` parameter to another call to `getIdentities` |
+
+#### EveryAuthOptions
+
+| name | type | description |
+|------|------|-------------|
+| `finishedUrl` | string | The absolute or relative path to send the user to after completing the authorization flow. |
+| `mapToUserId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string user id to identify the user in your system and later allow querying EveryAuth for credentials owned by that user. |
+| `mapToTenantId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string tenant id to identify the tenant in your system, and allow querying EveryAuth for credentials owned by that tenant. If you don't specify this callback, the value of the tenant id will be set to the same value as user id. |
+
+#### IEveryAuthCredential
+
+| name | type | description |
+|------|------|-------------|
+| `accessToken` | string | An access token to call the service APIs. The token is guaranteed to be valid. |
+| `native` | object | A representation of the security credential native to the service that generated it. See the [Supported services](#supported-services) section for details of a specific service. |
+
+#### IEveryAuthIdentity
+
+| name | type | description |
+|------|------|-------------|
+| `id` | string | A unique string identifying this particular idenitity that can be used in a call to `getIdentity`. |
+| `tags` | object | A set of tags associated with this identity. |
+| `dateModified` | string (optional) | The date the identity was last modified. |
 
 ## FAQ
 
