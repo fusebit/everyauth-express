@@ -39,6 +39,21 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("google", userId);
 ```
 
+The Google credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "ya...", // Current access token to Google APIs
+  "native": {
+    "scope": "https://www.googleapis.com/auth/userinfo.email ...", // Scopes that were granted
+    "id_token": "ey...", // Current Google ID token
+    "timestamp": 1649810201718, // Time the credential was established
+    "expires_at": 1649813800718, // Time the access token expires
+    "access_token": "ya..." // Current access token to Google APIs
+  },
+}
+```
+
 Then, instantiate the Google client and make the API calls you want:
 
 ```javascript
