@@ -102,7 +102,7 @@ export const getIdentity = async (
   const creds = await getTokenForIdentity(serviceId, identityId);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any,security/detect-object-injection
-  return (provider as any)[serviceId].normalize(creds);
+  return ((provider as any)[serviceId] || (provider as any)['oauth']).normalize(creds);
 };
 
 /**
