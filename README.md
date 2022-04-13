@@ -431,4 +431,4 @@ You need a [Fusebit](https://fusebit.io) account for three reasons:
 
 #### What if you don't support the service I need?
 
-Please [check if it is alreday on the roadmap and file an issue if it is not](https://github.com/fusebit/everyauth-express/issues).
+Please [check if it is already on the roadmap and file an issue if it is not](https://github.com/fusebit/everyauth-express/issues).
