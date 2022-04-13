@@ -39,6 +39,20 @@ const userId = "user-123"; // req.user.id in production
 const userCredentials = await everyauth.getIdentity("linear", userId);
 ```
 
+The Linear credential returned has the following schema:
+
+```javascript
+{
+  "accessToken": "lin_oauth_89...", // Current access token to Linear APIs
+  "native": {
+    "scope": ["read","write"], // Scopes that were granted
+    "timestamp": 1649810730286, // Time the credential was established
+    "expires_at": 1965516329286, // Time the access token expires
+    "access_token": "lin_oauth_89..." // Current access token to Linear APIs
+  },
+}
+```
+
 Then, instantiate the Linear client and make the API calls you want:
 
 ```javascript
