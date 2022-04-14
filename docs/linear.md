@@ -1,6 +1,6 @@
 # Linear
 
-EveryAuth is the easiest way to call Linear APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Linear support to your app.
+EveryAuth is the easiest way for your app to access Linear APIs. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Linear support to your app.
 
 ## Authorize access to Linear
 

@@ -1,6 +1,6 @@
 # Reddit
 
-EveryAuth is the easiest way to call Reddit APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Reddit support to your app.
+EveryAuth is the easiest way for your app to access Reddit APIs. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Reddit support to your app.
 
 ## Authorize access to Reddit
 

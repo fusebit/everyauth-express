@@ -1,6 +1,6 @@
 # EveryAuth
 
-EveryAuth is the easiest way to call third party APIs from your app without learning OAuth.
+EveryAuth is the easiest way for your app to access APIs like Slack, Salesforce, or Github.
 
 ```javascript
 import everyauth from "@fusebit/everyauth-express";

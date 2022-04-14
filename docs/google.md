@@ -1,6 +1,6 @@
 # Google
 
-EveryAuth is the easiest way to call Google APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Google support to your app.
+EveryAuth is the easiest way for your app to access Google APIs. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Google support to your app.
 
 ## Authorize access to Google
 

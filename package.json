@@ -1,7 +1,7 @@
 {
   "name": "@fusebit/everyauth-express",
-  "version": "1.0.2",
-  "description": "Everyauth is the easiest way to call third party APIs from your app without learning OAuth.",
+  "version": "1.0.3",
+  "description": "EveryAuth is the easiest way for your app to access APIs like Slack, Salesforce, or Github.",
   "main": "libc/index.js",
   "files": [
     "libc/**/*"

@@ -1,6 +1,6 @@
 # HubSpot
 
-EveryAuth is the easiest way to call HubSpot APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding HubSpot support to your app.
+EveryAuth is the easiest way for your app to access HubSpot APIs. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding HubSpot support to your app.
 
 ## Authorize access to HubSpot
 

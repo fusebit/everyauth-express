@@ -1,6 +1,6 @@
 # Slack
 
-EveryAuth is the easiest way to call Slack APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Slack support to your app.
+EveryAuth is the easiest way for your app to access Slack APIs. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Slack support to your app.
 
 ## Authorize access to Slack
 

@@ -1,6 +1,6 @@
 # Discord
 
-EveryAuth is the easiest way to call Discord APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Discord support to your app.
+EveryAuth is the easiest way for your app to access Discord APIs. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding Discord support to your app.
 
 ## Authorize access to Discord
 

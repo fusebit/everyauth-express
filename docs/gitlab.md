@@ -1,6 +1,6 @@
 # GitLab
 
-EveryAuth is the easiest way to call GitLab APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding GitLab support to your app.
+EveryAuth is the easiest way for your app to access GitLab APIs. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding GitLab support to your app.
 
 ## Authorize access to GitLab
 

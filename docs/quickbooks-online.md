@@ -1,6 +1,6 @@
 # QuickBooks
 
-EveryAuth is the easiest way to call QuickBooks APIs from your app without learning OAuth. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding QuickBooks support to your app.
+EveryAuth is the easiest way for your app to access QuickBooks APIs. Make sure to follow the [EveryAuth setup instructions](../README.md) before adding QuickBooks support to your app.
 
 ## Authorize access to QuickBooks
 
