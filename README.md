@@ -114,12 +114,13 @@ router.get("/slack/finished", async (req, res) => {
   const userId = "user-123"; // req.user.id in production
   const slackCredentials = await everyauth.getIdentity("slack", userId);
 
-  // Use the Node.js Slack client to send a message to
+  // Use the Node.js Slack client to send a DM message to
   // the user's Slack workspace
   const slack = new WebClient(slackCredentials.accessToken);
+  const directMessageChannel = slackCredentials?.native.authed_user.id;
   const result = await slack.chat.postMessage({
     text: "Hello world from EveryAuth!",
-    channel: "#general",
+    channel: directMessageChannel,
   });
 
   res.send("Success with EveryAuth");
