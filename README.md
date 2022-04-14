@@ -167,8 +167,8 @@ EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job a
 The express middleware locates credentials in the following way, in priority order:
 
 1. Programmatically through code.
-2. JSON in the `EVERYAUTH_ACCOUNT_JSON` environment variable.
-3. The `EVERYAUTH_ACCOUNT_PATH` environment variable points to the `settings.json` file in a directory.
+2. JSON in the `EVERYAUTH_PROFILE_JSON` environment variable.
+3. The `EVERYAUTH_PROFILE_PATH` environment variable points to the `settings.json` file in a directory.
 4. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
 
 The EveryAuth CLI is always looking for credentials in the `~/.fusebit/settings.json` file created when you run `everyauth init`. You can copy the `~/.fusebit` directory between machines to access the same underlying account. 
