@@ -77,7 +77,7 @@ The shared Google OAuth client that EveryAuth provides out of the box supports b
 * profile
 * https://www.googleapis.com/auth/userinfo.email
 
-If you need to address more advanced scenarios, you need to create your own OAuth client and configure EveryAuth to use it. First [create an OAuth client in Google](https://developers.google.com/adwords/api/docs/guides/authentication), and then use the EveyAuth CLI to configure the Google service to use it:
+If you need to address more advanced scenarios, you need to create your own OAuth client and configure EveryAuth to use it. First [create an OAuth client in Google](https://developers.google.com/adwords/api/docs/guides/authentication), and then use the EveryAuth CLI to configure the Google service to use it:
 
 ```bash
 everyauth service set google \
