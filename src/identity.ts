@@ -71,11 +71,14 @@ export const getIdentity = async (
     let identities: IEveryAuthIdentitySearch;
 
     if (typeof identityOrIdsOrTags == 'string') {
-      identities = await getIdentitiesByTags(serviceId, { [USER_TAG]: identityOrIdsOrTags });
+      identities = await getIdentitiesByTags(serviceId, {
+        [USER_TAG]: identityOrIdsOrTags,
+        [TENANT_TAG]: identityOrIdsOrTags,
+      });
     } else if (identityOrIdsOrTags.userId || identityOrIdsOrTags.tenantId) {
       identities = await getIdentitiesByTags(serviceId, {
         [USER_TAG]: identityOrIdsOrTags.userId,
-        [TENANT_TAG]: identityOrIdsOrTags.tenantId,
+        [TENANT_TAG]: identityOrIdsOrTags.tenantId || identityOrIdsOrTags.userId,
       });
     } else {
       identities = await getIdentitiesByTags(serviceId, identityOrIdsOrTags as IEveryAuthTagSet);
@@ -86,7 +89,7 @@ export const getIdentity = async (
       throw new Error(
         `The userId "${JSON.stringify(
           identityOrIdsOrTags
-        )}" resolves to more than one identity. Either use "getIdentities" to list all of the matching identities, or remove redundant identity using "everynode identity rm" or "deleteIdentity"`
+        )}" resolves to more than one identity. Either use "getIdentities" to list all of the matching identities, or remove redundant identity using "everyauth identity rm" or "deleteIdentity"`
       );
     }
 

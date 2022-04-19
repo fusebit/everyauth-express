@@ -26,7 +26,7 @@ export const getInstallIdByTags = async (tags: IEveryAuthTagSet): Promise<string
     {
       [SERVICE_TAG]: tags.serviceId,
       [USER_TAG]: tags.userId,
-      ...(tags.tenantId ? { [TENANT_TAG]: tags.tenantId } : {}),
+      [TENANT_TAG]: tags.tenantId || tags.userId,
     },
     '/integration/everyauth',
     'install'
@@ -37,7 +37,7 @@ export const getInstallIdByTags = async (tags: IEveryAuthTagSet): Promise<string
     throw new Error(
       `The userId "${JSON.stringify(
         tags
-      )}" resolves to more than one install. Either use "getIdentities" to list all of the matching identities, or remove redundant identities using "everynode identity rm" or "deleteIdentity"`
+      )}" resolves to more than one install. Either use "getIdentities" to list all of the matching identities, or remove redundant identities using "everyauth identity rm" or "deleteIdentity"`
     );
   }
 

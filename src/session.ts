@@ -2,15 +2,18 @@ import * as superagent from 'superagent';
 
 import debugModule from 'debug';
 const debug = debugModule('everyauth:profile');
-const dbg = ({ userId, tenantId }: { userId?: string; tenantId?: string }, msg: string) => {
-  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: ${msg}`);
+const dbg = (
+  { serviceId, userId, tenantId }: { serviceId: string; userId?: string; tenantId?: string },
+  msg: string
+) => {
+  debug(`${serviceId}[${tenantId || ''}${tenantId ? '/' : ''}${userId}]: ${msg}`);
 };
 
 import { getAuthedProfile, IProfile } from './profile';
 import EveryAuthVersion from './version';
 import { getInstallIdByTags } from './install';
 
-import { SERVICE_TAG, USER_TAG, TENANT_TAG } from './constants';
+import { VERSION_TAG, SERVICE_TAG, USER_TAG, TENANT_TAG } from './constants';
 
 const COMMIT_URL_SUFFIX = '/commit';
 
@@ -39,11 +42,8 @@ export const start = async (
     tags: {
       [SERVICE_TAG]: serviceId,
       [USER_TAG]: userId,
-      ...(tenantId
-        ? {
-            [TENANT_TAG]: tenantId,
-          }
-        : {}),
+      [TENANT_TAG]: tenantId || userId,
+      [VERSION_TAG]: EveryAuthVersion,
     },
     components: [serviceId],
   };
@@ -51,7 +51,7 @@ export const start = async (
   // Is there an existing matching user?
   payload.installId = await getInstallIdByTags({ serviceId, userId, tenantId });
   dbg(
-    { tenantId, userId },
+    { serviceId, tenantId, userId },
     payload.installId ? `Found matching install, reusing ${payload.installId}` : 'No matching install found'
   );
 
@@ -64,7 +64,7 @@ export const start = async (
 
   const sessionId = response.body.id;
 
-  dbg({ tenantId, userId }, `created session ${sessionId}`);
+  dbg({ serviceId, tenantId, userId }, `created session ${sessionId}`);
 
   return `${baseUrl}/session/${sessionId}/start`;
 };
@@ -121,7 +121,7 @@ export const commit = async (
   // eslint-disable-next-line security/detect-object-injection
   const tenantId = result.body.tags[TENANT_TAG];
 
-  dbg({ userId, tenantId }, `Established identity ${identityId}`);
+  dbg({ serviceId, userId, tenantId }, `Established identity ${identityId}`);
 
   return { identityId, tenantId, userId };
 };

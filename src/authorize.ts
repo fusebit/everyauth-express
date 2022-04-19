@@ -6,8 +6,8 @@ import * as session from './session';
 
 import debugModule from 'debug';
 const debug = debugModule('everyauth:authorize');
-const dbg = ({ userId, tenantId }: { userId?: string; tenantId?: string }, msg: string) => {
-  debug(`${tenantId || ''}${tenantId ? '/' : ''}${userId}: ${msg}`);
+const dbg = ({ serviceId, userId, tenantId }: { serviceId: string; userId: string; tenantId: string }, msg: string) => {
+  debug(`${serviceId}[${tenantId || ''}${tenantId ? '/' : ''}${userId}]: ${msg}`);
 };
 
 export interface IEveryAuthContext {
@@ -19,7 +19,7 @@ export interface IEveryAuthContext {
    */
   identityId: string;
 
-  tenantId: string /** The tenantId supplied by the mapToTenantId function for this request. */;
+  tenantId: string /** The tenantId supplied by the mapToTenantId function for this request, or the userId if not supplied. */;
   userId: string /** The userId supplied by the mapToUserId function for this request. */;
 }
 
@@ -45,6 +45,9 @@ export interface IEveryAuthOptions {
    * constant for experimentation and testing purposes.
    *
    * The tenant represents the larger customer, which may include multiple authorized users.
+   *
+   * If mapToTenantId is not supplied, then the tenantId on an identity will be set to the same value as the
+   * userId.
    */
   mapToTenantId?: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
 
@@ -98,7 +101,11 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
 export const authorize = (serviceId: string, options: IEveryAuthOptions): express.Router => {
   const router = express.Router({ mergeParams: true });
 
-  const redirect = (req: express.Request, res: express.Response, ids: { userId: string; tenantId?: string }) => {
+  const redirect = (
+    req: express.Request,
+    res: express.Response,
+    ids: { userId: string; tenantId: string; serviceId: string }
+  ) => {
     // Parse the finishedUrl, supporting both a plain path and a full url.
     let finUrl: URL | undefined = undefined;
     let fullUrl = false;
@@ -113,10 +120,10 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
       finUrl = new URL(`http://localhost${options.finishedUrl}`);
     }
 
+    finUrl.searchParams.append('serviceId', serviceId);
     finUrl.searchParams.append('userId', ids.userId);
-    if (ids.tenantId) {
-      finUrl.searchParams.append('tenantId', ids.tenantId);
-    }
+    finUrl.searchParams.append('tenantId', ids.tenantId);
+
     if (req.query.error) {
       finUrl.searchParams.append('error', req.query.error as string);
     }
@@ -126,10 +133,10 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
 
   router.get('/', async (req: express.Request, res: express.Response) => {
     const userId = await options.mapToUserId(req);
-    const tenantId = options.mapToTenantId ? await options.mapToTenantId(req) : undefined;
+    const tenantId = options.mapToTenantId ? await options.mapToTenantId(req) : userId;
     const hostedBaseUrl = getHostedBaseUrl(options, req);
 
-    dbg({ userId, tenantId }, `Authorizing on ${hostedBaseUrl}`);
+    dbg({ serviceId, userId, tenantId }, `Authorizing on ${hostedBaseUrl}`);
 
     const nextUrl = await session.start(serviceId, tenantId, userId, getHostedBaseUrl(options, req));
 
@@ -144,6 +151,7 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
       const sessionEntity = await session.get(sessionId);
 
       const ids = {
+        serviceId,
         // eslint-disable-next-line security/detect-object-injection
         userId: sessionEntity.tags[USER_TAG] as string,
         // eslint-disable-next-line security/detect-object-injection
@@ -157,12 +165,12 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
     // Update the session object if it's changed
     const { identityId, tenantId, userId } = await session.commit(serviceId, sessionId);
 
-    dbg({ userId, tenantId }, `Success ${identityId}`);
+    dbg({ serviceId, userId, tenantId }, `Success ${identityId}`);
 
-    dbg({ userId, tenantId }, `Redirect to ${options.finishedUrl}`);
+    dbg({ serviceId, userId, tenantId }, `Redirect to ${options.finishedUrl}`);
 
     // Propagate to redirect
-    redirect(req, res, { userId, tenantId });
+    redirect(req, res, { serviceId, userId, tenantId });
   });
 
   return router;
