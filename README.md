@@ -40,7 +40,7 @@ Key benefits:
 - Automatic token refresh.
 - Active monitoring and alerting for expired or revoked credentials (coming soon).
 
-EveryAuth consists of Express middleware, a management CLI, and a [Fusebit](https://fusebit.io) service.
+EveryAuth consists of Express middleware, a management CLI, and a [Fusebit](https://fusebit.io) service. If you need additional context of the key benefits, check out our [EveryAuth announcement](https://fusebit.io/blog/everyauth/) or ask us a question on [Twitter @fusebitio](https://twitter.com/fusebitio).
 
 ## Contents
 
