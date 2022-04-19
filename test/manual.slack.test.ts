@@ -10,7 +10,7 @@ import { createHttpTerminator } from 'http-terminator';
 
 import EveryAuthVersion from '../src/version';
 
-import { USER_TAG, SERVICE_TAG } from '../src/constants';
+import { SERVICE_TAG, TENANT_TAG, USER_TAG } from '../src/constants';
 import * as everyauth from '../src';
 
 interface IServer {
@@ -50,7 +50,7 @@ const startServer = async (): Promise<IServer> => {
   return { app, listener, port, close: async () => httpTerminator.terminate() };
 };
 
-const runTest = async (options?: { deny?: boolean } & Partial<everyauth.IEveryAuthOptions>) => {
+const runTest = async (serviceId: string, options?: { deny?: boolean } & Partial<everyauth.IEveryAuthOptions>) => {
   const server = await startServer();
 
   const [completeResolve, completePromise] = getResolve<void>();
@@ -72,13 +72,23 @@ const runTest = async (options?: { deny?: boolean } & Partial<everyauth.IEveryAu
   // Add the EveryAuth middleware
   server.app.use(
     '/slack',
-    everyauth.authorize('slack', { finishedUrl: '/complete', mapToUserId: () => 'user-1', ...(options ? options : {}) })
+    everyauth.authorize(serviceId, {
+      finishedUrl: '/complete',
+      mapToUserId: () => 'user-1',
+      ...(options ? options : {}),
+    })
   );
 
   // Let's do something interesting on completion!
   server.app.get('/complete', async (req: express.Request, res: express.Response) => {
-    result = req.query.error ? (req.query.error as string) : 'success';
+    result = !!req.query.error === !!options?.deny ? 'success' : `failed: ${req.query.error as string}`;
+
     res.send(result);
+
+    expect(req.query.serviceId).toBe(serviceId);
+    expect(req.query.tenantId?.length).toBeGreaterThan(1);
+    expect(req.query.userId?.length).toBeGreaterThan(1);
+
     completeResolve();
   });
 
@@ -105,14 +115,14 @@ describe('Manual Test Cases', () => {
   });
 
   test('Manual: Validate that the express middleware works for Slack', async () => {
-    const result = await runTest();
+    const result = await runTest('slack');
     expect(result).toBe('success');
-  }, 180000);
+  }, 30000);
 
   test('Manual: Validate that the express middleware receives errors on cancels', async () => {
-    const result = await runTest({ deny: true });
-    expect(result).toBe('access_denied');
-  }, 180000);
+    const result = await runTest('slack', { deny: true });
+    expect(result).toBe('success');
+  }, 30000);
 
   test('Manual: Exercise getIdentity(userId)', async () => {
     const userCredentials = await everyauth.getIdentity('slack', 'user-1');
@@ -140,12 +150,12 @@ describe('Manual Test Cases', () => {
         expect(result.ok).toBe(true);
       })
     );
-  }, 180000);
+  }, 30000);
 
   test('Manual: Re-auth a user', async () => {
-    const result = await runTest();
+    const result = await runTest('slack');
     expect(result).toBe('success');
-  }, 180000);
+  }, 30000);
 
   //
   // At this point there are two `user-1` identities.
@@ -164,7 +174,7 @@ describe('Manual Test Cases', () => {
       .set('User-Agent', EveryAuthVersion)
       .set('Authorization', `Bearer ${profile.token}`)
       .set('Content-Type', 'application/json')
-      .send({ data: { test: true }, tags: { [USER_TAG]: 'user-1', [SERVICE_TAG]: 'slack' } });
+      .send({ data: { test: true }, tags: { [USER_TAG]: 'user-1', [TENANT_TAG]: 'user-1', [SERVICE_TAG]: 'slack' } });
 
     /* This should throw, due to duplicate matching identities. */
     await expect(everyauth.getIdentity('slack', 'user-1')).rejects.toThrow();
@@ -176,32 +186,24 @@ describe('Manual Test Cases', () => {
       .set('Authorization', `Bearer ${profile.token}`);
   });
 
-  test('Manual: Verify no matches with tenantId', async () => {
+  test('Manual: Verify no matches with invalid tenantId', async () => {
     const identities = await everyauth.getIdentities('slack', { tenantId: 'sonicity', userId: 'user-1' });
     expect(identities.items.length).toBe(0);
   });
 
-  test('Manual: Verify no matches with undefined tenantId', async () => {
-    const identities = await everyauth.getIdentities('slack', { tenantId: undefined, userId: 'user-1' });
-    expect(identities.items.length).toBe(0);
-  });
-
   test('Manual: Create two new identities that have tenants set', async () => {
-    let result = await runTest({ mapToTenantId: () => 'tenant-1' });
+    let result = await runTest('slack', { mapToTenantId: () => 'tenant-1' });
     expect(result).toBe('success');
 
-    result = await runTest({ mapToTenantId: () => 'tenant-2' });
+    result = await runTest('slack', { mapToTenantId: () => 'tenant-2' });
     expect(result).toBe('success');
-  }, 180000);
+  }, 30000);
 
   test('Manual: Validate that tenant searching works with null or specified', async () => {
-    let identities = await everyauth.getIdentities('slack', { tenantId: null, userId: 'user-1' });
-    expect(identities.items.length).toBe(0);
-
-    identities = await everyauth.getIdentities('slack', { tenantId: undefined, userId: 'user-1' });
-    expect(identities.items.length).toBe(2);
+    let identities = await everyauth.getIdentities('slack', { tenantId: undefined, userId: 'user-1' });
+    expect(identities.items.length).toBe(3);
 
     identities = await everyauth.getIdentities('slack', { tenantId: 'tenant-1', userId: 'user-1' });
     expect(identities.items.length).toBe(1);
-  }, 180000);
+  }, 30000);
 });
