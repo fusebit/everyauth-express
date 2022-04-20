@@ -19,8 +19,8 @@ interface IProfilePki {
   issuer: string;
   subject: string;
   kid: string;
-  privateKey: string;
-  publicKey: string;
+  privateKey?: string;
+  publicKey?: string;
 }
 
 export interface IProfile {
@@ -35,6 +35,7 @@ export interface IProfile {
   kid: string;
   pki: IProfilePki;
 
+  staticToken?: string;
   token?: string;
 }
 
@@ -135,7 +136,7 @@ export const getAuthedProfile = async (profileName?: string): Promise<IProfile> 
   };
 
   cachedJwt.expiresAt = Date.now() + 60 * 60 * 24 * 1000;
-  cachedJwt.token = jwt.sign({}, profile.pki.privateKey, options);
+  cachedJwt.token = profile.staticToken ? profile.staticToken : jwt.sign({}, profile.pki.privateKey as string, options);
 
   debug(`${profile.keyPair}: generated pki key, expiring at ${new Date(cachedJwt.expiresAt).toUTCString()}`);
   return { ...cachedFoundProfile, token: cachedJwt.token };

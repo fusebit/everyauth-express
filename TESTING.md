@@ -20,5 +20,5 @@ npm run test
 Run the tests that require human action (such as approving OAuth dialogs):
 
 ```
-npom run test:manual
+npm run test:manual
 ```
