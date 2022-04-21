@@ -172,7 +172,7 @@ describe('Manual Test Cases', () => {
     const dupIdentity = await superagent
       .post(identityUrl)
       .set('User-Agent', EveryAuthVersion)
-      .set('Authorization', `Bearer ${profile.token}`)
+      .set('Authorization', `Bearer ${profile.accessToken}`)
       .set('Content-Type', 'application/json')
       .send({ data: { test: true }, tags: { [USER_TAG]: 'user-1', [TENANT_TAG]: 'user-1', [SERVICE_TAG]: 'slack' } });
 
@@ -183,7 +183,7 @@ describe('Manual Test Cases', () => {
     await superagent
       .delete(`${identityUrl}${dupIdentity.body.id}`)
       .set('User-Agent', EveryAuthVersion)
-      .set('Authorization', `Bearer ${profile.token}`);
+      .set('Authorization', `Bearer ${profile.accessToken}`);
   });
 
   test('Manual: Verify no matches with invalid tenantId', async () => {

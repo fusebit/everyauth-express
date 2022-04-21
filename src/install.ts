@@ -63,7 +63,7 @@ export const getInstallIdBySession = async (sessionId: string): Promise<string |
   const installs = await superagent
     .get(`${baseUrl}?tag=${SESSION_TAG}=${sessionId}`)
     .set('User-Agent', EveryAuthVersion)
-    .set('Authorization', `Bearer ${profile.token}`);
+    .set('Authorization', `Bearer ${profile.accessToken}`);
 
   if (installs.body.items.length > 1) {
     throw new Error(`Too many installs for session ${sessionId}; contact support.`);

@@ -9,7 +9,7 @@ const dbg = (
   debug(`${serviceId}[${tenantId || ''}${tenantId ? '/' : ''}${userId}]: ${msg}`);
 };
 
-import { getAuthedProfile, IProfile } from './profile';
+import { getAuthedProfile, IAuthedProfile } from './profile';
 import EveryAuthVersion from './version';
 import { getInstallIdByTags } from './install';
 
@@ -25,7 +25,7 @@ export interface ISession {
   tags: Record<string, string | null>;
 }
 
-const getSessionUrl = (profile: IProfile) =>
+const getSessionUrl = (profile: IAuthedProfile) =>
   `${profile.baseUrl}/v2/account/${profile.account}/subscription/${profile.subscription}/integration/${META_INTEGRATION_ID}`;
 
 export const start = async (
@@ -57,7 +57,7 @@ export const start = async (
 
   const response = await superagent
     .post(`${baseUrl}/session`)
-    .set('Authorization', `Bearer ${profile.token}`)
+    .set('Authorization', `Bearer ${profile.accessToken}`)
     .set('User-Agent', EveryAuthVersion)
     .set('Content-Type', 'application/json')
     .send(payload);
@@ -75,7 +75,7 @@ export const get = async (sessionId: string): Promise<ISession> => {
 
   const response = await superagent
     .get(`${baseUrl}/session/${sessionId}`)
-    .set('Authorization', `Bearer ${profile.token}`)
+    .set('Authorization', `Bearer ${profile.accessToken}`)
     .set('User-Agent', EveryAuthVersion);
 
   return response.body;
@@ -94,7 +94,7 @@ export const commit = async (
   let result = await superagent
     .post(`${baseUrl}/session/${sessionId}/commit`)
     .set('User-Agent', EveryAuthVersion)
-    .set('Authorization', `Bearer ${profile.token}`)
+    .set('Authorization', `Bearer ${profile.accessToken}`)
     .send();
 
   // Get the session while the commit is going to grab the tenant id; try multiple times in case there's a
@@ -103,7 +103,7 @@ export const commit = async (
     result = await superagent
       .get(`${baseUrl}/session/${sessionId}/`)
       .set('User-Agent', EveryAuthVersion)
-      .set('Authorization', `Bearer ${profile.token}`);
+      .set('Authorization', `Bearer ${profile.accessToken}`);
   } while (!result.body.output);
 
   // Convert the install to an identity
@@ -112,7 +112,7 @@ export const commit = async (
   const install = await superagent
     .get(`${baseUrl}/install/${installId}/`)
     .set('User-Agent', EveryAuthVersion)
-    .set('Authorization', `Bearer ${profile.token}`);
+    .set('Authorization', `Bearer ${profile.accessToken}`);
 
   // eslint-disable-next-line security/detect-object-injection
   const identityId = install.body.data[serviceId].entityId;
