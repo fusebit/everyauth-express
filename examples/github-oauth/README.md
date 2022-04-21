@@ -13,3 +13,5 @@ Run the example
 ```shell
 node .
 ```
+
+Navigate to `http://localhost:3000`

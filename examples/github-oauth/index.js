@@ -2,21 +2,52 @@ const express = require('express');
 const everyauth = require('@fusebit/everyauth-express');
 const { Octokit } = require('octokit');
 const { v4: uuidv4 } = require('uuid');
+const cookieSession = require('cookie-session');
 
 const app = express();
 const port = 3000;
+app.use(
+  cookieSession({
+    name: 'session',
+    secret: 'secret',
+  })
+);
+
 app.set('view engine', 'pug');
 
+app.get('/', (req, res) => {
+  if (!req.session.userId) {
+    return res.redirect(`/authorize/${uuidv4()}`);
+  }
+  res.redirect('/finished');
+});
+
 app.use(
-  '/authorize',
+  '/authorize/:userId',
+  (req, res, next) => {
+    if (!req.params.userId) {
+      return res.redirect('/');
+    }
+    return next();
+  },
   everyauth.authorize('githuboauth', {
     finishedUrl: '/finished',
-    mapToUserId: (req) => uuidv4(),
+    mapToUserId: (req) => req.params.userId,
   })
 );
 
 app.get('/finished', async (req, res) => {
-  const userId = req.query.userId;
+  // Get userId from the authorization redirect or via cookie if already authorized.
+  if (req.query.userId) {
+    req.session.userId = req.query.userId;
+  }
+
+  const userId = req.query.userId || req.session.userId;
+
+  if (!userId) {
+    res.redirect('/');
+  }
+
   const userCredentials = await everyauth.getIdentity('githuboauth', userId);
   const client = new Octokit({ auth: userCredentials?.accessToken });
   const { data } = await client.rest.users.getAuthenticated();
