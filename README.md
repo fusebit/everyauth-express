@@ -2,6 +2,13 @@
 
 EveryAuth is the easiest way for your app to access APIs like Slack, Salesforce, or Github.
 
+<h2 align="center">Join the discussion</h2>
+<p align="center">
+  <a href ="https://join.slack.com/t/fusebitio/shared_invite/zt-qe7uidtf-4cs6OgaomFVgAF_fQZubfg"><img src="https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white" width="100" /></a>
+  <a href = "https://discord.gg/SN4rhhCH"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" width="100" /></a>
+  <a href = "https://twitter.com/fusebitio"><img src="https://img.shields.io/badge/Twitter-1DA1F2?style=for-the-badge&logo=twitter&logoColor=white" width="100" /></a>
+</p>
+
 ```javascript
 import everyauth from "@fusebit/everyauth-express";
 import { WebClient } from "@slack/web-api";
