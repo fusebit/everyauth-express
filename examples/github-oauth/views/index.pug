@@ -1,0 +1,47 @@
+html
+  head
+    title=title
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==" crossorigin="anonymous")
+  body
+    .container
+      .profile
+        .top
+          img.pic(src=avatar_url alt='GitHub Avatar')
+          h2=name 
+          a(href=html_url) #{login}
+          p=bio
+        p.followers
+          i(class="fa-solid fa-users")
+          span #{followers} followers
+          span(class="separator") -
+          span #{following} following
+        section
+          span
+              i(class="fa-solid fa-building")
+          span #{company}
+        section
+          span
+              i(class="fa fa-location-dot")
+          span #{location}
+        section
+          span
+              i(class="fa-brands fa-twitter")
+          span 
+            a(href=`https://www.twitter.com/${twitter_username}`) #{twitter_username}
+        section
+          span
+              i(class="fa-solid fa-floppy-disk")
+          span Using #{used_storage} % #{plan.name} plan storage
+      .public-repos
+        h2 Your public repositories (#{public_repos.length})
+        ul
+          each val in public_repos 
+            li
+              a(href=val.html_url title=val.description target="_blank") #{val.full_name}
+              span=val.description
+              unless !val.language
+                span.lang=val.language
+
+

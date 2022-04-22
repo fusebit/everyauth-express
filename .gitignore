@@ -111,3 +111,5 @@ examples/package-lock.json
 # Vim
 .*.swp
 .*.swo
+
+.DS_Store
