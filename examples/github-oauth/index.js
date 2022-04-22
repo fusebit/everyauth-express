@@ -6,6 +6,18 @@ const cookieSession = require('cookie-session');
 
 const app = express();
 const port = 3000;
+
+// Get userId from the authorization redirect or via session if already authorized.
+const handleSession = (req, res, next) => {
+  if (req.query.userId) {
+    req.session.userId = req.query.userId;
+  }
+  if (!req.session.userId) {
+    return res.redirect('/');
+  }
+  return next();
+};
+
 app.use(
   cookieSession({
     name: 'session',
@@ -31,24 +43,15 @@ app.use(
     return next();
   },
   everyauth.authorize('githuboauth', {
+    // The endpoint of your app where control will be returned afterwards
     finishedUrl: '/finished',
+    // The user ID of the authenticated user the credentials will be associated with
     mapToUserId: (req) => req.params.userId,
   })
 );
 
-app.get('/finished', async (req, res) => {
-  // Get userId from the authorization redirect or via cookie if already authorized.
-  if (req.query.userId) {
-    req.session.userId = req.query.userId;
-  }
-
-  const userId = req.query.userId || req.session.userId;
-
-  if (!userId) {
-    res.redirect('/');
-  }
-
-  const userCredentials = await everyauth.getIdentity('githuboauth', userId);
+app.get('/finished', handleSession, async (req, res) => {
+  const userCredentials = await everyauth.getIdentity('githuboauth', req.session.userId);
   const client = new Octokit({ auth: userCredentials?.accessToken });
   const { data } = await client.rest.users.getAuthenticated();
   const { data: repos } = await client.request('GET /user/repos', {});
