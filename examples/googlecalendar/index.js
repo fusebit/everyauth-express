@@ -108,12 +108,12 @@ app.get('/google/calendar/events/:calendarId', handleSession, async (req, res) =
 });
 
 // Add a new event to a calendar by ID
-app.post('/google/calendar/events/:id', handleSession, async (req, res) => {
+app.post('/google/calendar/events/:calendarId', handleSession, async (req, res) => {
   // Retrieve access token using userId from session
   const userCredentials = await everyauth.getIdentity('google', req.session.userId);
 
   // Retrieve Calendar ID or Default to Primary Calendar
-  const myCalendarId = req.params.id || 'primary';
+  const myCalendarId = req.params.calendarId || 'primary';
 
   // Retrieve QuickAddText or use a Default Fallback
   const quickAddText = req.body.quickadd || 'New Event Added by Fusebit';
