@@ -1,0 +1,38 @@
+<html>
+ <head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="vh-60 d-flex justify-content-center align-items-center">
+
+      <div class="card text-center" style="width: 40rem;">
+        <div class="card-header bg-primary text-white"> <h5 class="card-title">List of Events</h5> </div> 
+
+  <div class="card card-body bg-light h-5" style="height:100%;">
+
+  <form method="POST" action="/google/calendar/events/{{#EventListData.myCalendarId}}{{.}}{{/EventListData.myCalendarId}}">
+    <div class="container">
+      <div class="row">
+        <div class="col-8">
+          <input type="text" class="form-control" id="quickadd" name="quickadd"  placeholder="Add a Quick Event using Plain Text"></div>
+        <div class="col-4">
+          <button type="submit" class="btn btn-primary mb-2">Add</button> </div>
+      </div>
+    </div>
+  </form>
+  </div>
+     <div class="card card-body bg-light h-25" >
+      <ul class="list-group overflow-scroll" style="height:100%; max-height: 40rem;">
+         {{#EventListData.calendarEventsList}}
+          <li class="list-group-item list-group-item-action justify-content-between">{{summary}}  
+            <span class="badge bg-primary rounded-pill">{{#startTime}}{{startTime.dateTime}}{{/startTime}}</span>
+          <br>
+         </li>
+        {{/EventListData.calendarEventsList}}
+    </ul> 
+  </div>
+
+  </div>
+
+</body>
+</html>
