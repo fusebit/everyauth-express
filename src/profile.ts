@@ -78,8 +78,8 @@ export const config = async (profile: IProfile | IAuthedProfile) => {
 };
 
 export const loadEnvironmentToken = (): IAuthedProfile | undefined => {
-  const profile = process.env.EVERYAUTH_PROFILE_TOKEN
-    ? (cachedFoundProfile = JSON.parse(process.env.EVERYAUTH_PROFILE_TOKEN))
+  const profile = process.env.EVERYAUTH_TOKEN
+    ? (cachedFoundProfile = JSON.parse(Buffer.from(process.env.EVERYAUTH_TOKEN, 'base64').toString('utf8')))
     : undefined;
 
   if (!profile) {
@@ -100,7 +100,9 @@ export const loadProfile = async (profileName?: string): Promise<IProfile> => {
 
   // Look for the EVERYAUTH_PROFILE_JSON object
   if (process.env.EVERYAUTH_PROFILE_JSON) {
-    return (cachedFoundProfile = JSON.parse(process.env.EVERYAUTH_PROFILE_JSON));
+    return (cachedFoundProfile = JSON.parse(
+      Buffer.from(process.env.EVERYAUTH_PROFILE_JSON, 'base64').toString('utf8')
+    ));
   }
 
   // Look for the EVERYAUTH_PROFILE_PATH to load a specific directory with a settings.json file in it

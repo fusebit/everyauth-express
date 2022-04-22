@@ -13,7 +13,7 @@ mkdir -p test/mock
 # Create the profile.json for the EVERYAUTH_PROFILE_JSON
 npx @fusebit/everyauth-cli profile export > test/mock/profile.json
 
-# Create the jwt.json for the EVERYAUTH_PROFILE_TOKEN
+# Create the jwt.json for the EVERYAUTH_TOKEN
 npx @fusebit/everyauth-cli token -e 1w > test/mock/jwt.json
 
 # Create the profile directory

@@ -166,9 +166,9 @@ EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job a
 
 The express middleware locates credentials in the following way, in priority order:
 
-1. Use a JWT generated via `everyauth token` in the `EVERYAUTH_PROFILE_TOKEN` environment variable.
-2. Programmatically through code.
-3. JSON in the `EVERYAUTH_PROFILE_JSON` environment variable.
+1. Programmatically through code via the `everyauth.config()` method.
+2. Use a base64-encoded JWT generated via `everyauth token | base64` in the `EVERYAUTH_TOKEN` environment variable.
+3. Use a base64-encoded profile generated via `everyauth profile export | base64` in the `EVERYAUTH_PROFILE_JSON` environment variable 
 4. The `EVERYAUTH_PROFILE_PATH` environment variable points to the `settings.json` file in a directory.
 5. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
 
@@ -248,8 +248,15 @@ Performs one-time initialization of EveryAuth on a developer machine. This comma
 #### everyauth profile export
 
 Exports to `stdout` a JSON-encoded profile object which can be used with `everyauth profile import`, or
-set in the environment within `EVERYAUTH_PROFILE_JSON` to support generating keys in production to
-authenticate to the EveryAuth backend.
+set in the environment after base64 encoding within `EVERYAUTH_PROFILE_JSON` to support generating keys in
+production to authenticate to the EveryAuth backend.
+
+**Example:** Encode the current profile to generate JWT keys dynamically in production, and store it in a
+`.env` file.
+
+```
+echo EVERYAUTH_PROFILE_JSON=`everyauth profile export | base64` >> .env
+```
 
 #### everyauth profile import
 
@@ -257,11 +264,18 @@ Supports importing, from `stdin` or a file, a previously existing profile.
 
 #### everyauth token
 
-Generates a JSON-encoded JWT that can be placed within the `EVERYAUTH_PROFILE_TOKEN` environment variable to
+Generates a JSON-encoded JWT that, once base64-encoded, can be placed within the `EVERYAUTH_TOKEN` environment variable to
 be automatically used by the middleware to communicate with the EveryAuth backend.
 
 Supports a `--expires` parameter that allows for a custom expiration time to be specified via standard
 [ms](https://www.npmjs.com/package/ms) interval encoding.  The default expiration interval is `2h` (two hours).
+
+**Example:** Generate a token that is good for 12 weeks from the current profile, and store it in a `.env`
+file.
+
+```
+echo EVERYAUTH_TOKEN=`everyauth token --expires 12w | base64` >> .env
+```
 
 #### everyauth service ls
 
