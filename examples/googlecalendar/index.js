@@ -4,6 +4,7 @@ const everyauth = require('@fusebit/everyauth-express');
 const { v4: uuidv4 } = require('uuid');
 const cookieSession = require('cookie-session');
 const mustacheExpress = require('mustache-express');
+const moment = require('moment');
 const app = express();
 const port = 3000;
 
@@ -94,13 +95,29 @@ app.get('/google/calendar/events/:calendarId', handleSession, async (req, res) =
     timeMin: today,
   });
 
+  console.log(calendarEvents.data.items);
   const calendarEventsList = calendarEvents.data.items.map((calendarItem) => {
+
+
+    // Google Calendar API Returns Inconsistent Start Times
+    // So this is a workaround to handle the data and normalize it
+    var startTimeFromNow = '';
+    if (!calendarItem.start) {
+      startTimeFromNow = '';
+    } 
+    else if (calendarItem.start.dateTime) {
+      startTimeFromNow = moment(calendarItem.start.dateTime).fromNow();
+    }
+    else if (calendarItem.start.date) {
+      startTimeFromNow = moment(calendarItem.start.date).fromNow();
+    }
     return {
       summary: calendarItem.summary,
       description: calendarItem.description,
-      startTime: calendarItem.start,
+      startTime: startTimeFromNow,
     };
   });
+
 
   res.render('eventlist', {
     EventListData: { calendarEventsList, myCalendarId },
