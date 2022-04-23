@@ -251,7 +251,7 @@ Exports to `stdout` a JSON-encoded profile object which can be used with `everya
 set in the environment after base64 encoding within `EVERYAUTH_PROFILE_JSON` to support generating keys in
 production to authenticate to the EveryAuth backend.
 
-**Example:** Encode the current profile to generate JWT keys dynamically in production, and store it in a
+**Example:** Encode the profile to generate short-lived JWT keys dynamically in production, and store it in a
 `.env` file.
 
 ```
@@ -267,11 +267,10 @@ Supports importing, from `stdin` or a file, a previously existing profile.
 Generates a JSON-encoded JWT that, once base64-encoded, can be placed within the `EVERYAUTH_TOKEN` environment variable to
 be automatically used by the middleware to communicate with the EveryAuth backend.
 
-Supports a `--expires` parameter that allows for a custom expiration time to be specified via standard
+Supports a `--expires` parameter that allows for a custom expiration time specified via standard
 [ms](https://www.npmjs.com/package/ms) interval encoding.  The default expiration interval is `2h` (two hours).
 
-**Example:** Generate a token that is good for 12 weeks from the current profile, and store it in a `.env`
-file.
+**Example:** Generate a token valid for 12 weeks, and store it in a `.env` file.
 
 ```
 echo EVERYAUTH_TOKEN=`everyauth token --expires 12w | base64` >> .env
