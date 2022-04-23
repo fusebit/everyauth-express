@@ -7,6 +7,8 @@ import debugModule from 'debug';
 const debug = debugModule('everyauth:profile');
 
 const JWT_CACHE_MARGIN = 1000 * 60 * 5; // 5 minute margin before refreshing the key.
+const JWT_DEFAULT_EXPIRES_IN = 60 * 60 * 24;
+
 const settingsName = 'settings.json';
 const keyDir = 'keys';
 const publicKeyFileName = 'pub';
@@ -14,7 +16,7 @@ const privateKeyFileName = 'pri';
 const jwtAlgorithm = 'RS256';
 
 interface IProfilePki {
-  algorithm: 'RS256';
+  algorithm: string;
   audience: string;
   issuer: string;
   subject: string;
@@ -23,36 +25,72 @@ interface IProfilePki {
   publicKey: string;
 }
 
-export interface IProfile {
-  created: string;
-  updated: string;
+// Output from `everyauth profile export`
+interface IProfile {
+  profile: {
+    created: string;
+    updated: string;
+    account: string;
+    subscription: string;
+    baseUrl: string;
+    issuer: string;
+    subject: string;
+    keyPair: string;
+    kid: string;
+  };
+  type: string;
+  pki: IProfilePki;
+}
+
+// Output from `everyauth token`
+export interface IAuthedProfile {
   account: string;
   subscription: string;
   baseUrl: string;
-  issuer: string;
-  subject: string;
-  keyPair: string;
-  kid: string;
-  pki: IProfilePki;
-
-  token?: string;
+  accessToken: string;
+  expiresAt: string;
+  expiresAtMs: number;
 }
 
 export let cachedFoundProfile: IProfile;
-
-export const cachedJwt: {
-  expiresAt: number;
-  token: string;
-} = { expiresAt: 0, token: '' };
+export let cachedJwt: IAuthedProfile = {
+  account: '',
+  subscription: '',
+  baseUrl: '',
+  accessToken: '',
+  expiresAt: '',
+  expiresAtMs: 0,
+};
 
 /**
  * Supply a profile to use directly, instead of using the automatic discovery options.
  *
- * @param profile A profile object, created from a previously initialized profile.  Includes the private and
- * public keys used to authenticate with the remote service.
+ * @param profile A profile object, generated either via `everyauth profile export` or via `everyauth token`.  Can include the private and
+ * public keys used to authenticate with the remote service for ever-fresh credential generation.
  */
-export const config = async (profile: IProfile) => {
+export const config = async (profile: IProfile | IAuthedProfile) => {
+  if ('profile' in profile) {
+    cachedFoundProfile = profile;
+    return;
+  }
+
+  cachedJwt = profile;
+};
+
+export const loadEnvironmentToken = (): IAuthedProfile | undefined => {
+  const profile = process.env.EVERYAUTH_TOKEN
+    ? (cachedFoundProfile = JSON.parse(Buffer.from(process.env.EVERYAUTH_TOKEN, 'base64').toString('utf8')))
+    : undefined;
+
+  if (!profile) {
+    return undefined;
+  }
+
+  cachedJwt = profile;
+  cachedJwt.expiresAtMs = Number(new Date(cachedJwt.expiresAt));
   cachedFoundProfile = profile;
+
+  return profile;
 };
 
 export const loadProfile = async (profileName?: string): Promise<IProfile> => {
@@ -62,7 +100,9 @@ export const loadProfile = async (profileName?: string): Promise<IProfile> => {
 
   // Look for the EVERYAUTH_PROFILE_JSON object
   if (process.env.EVERYAUTH_PROFILE_JSON) {
-    return (cachedFoundProfile = JSON.parse(process.env.EVERYAUTH_PROFILE_JSON));
+    return (cachedFoundProfile = JSON.parse(
+      Buffer.from(process.env.EVERYAUTH_PROFILE_JSON, 'base64').toString('utf8')
+    ));
   }
 
   // Look for the EVERYAUTH_PROFILE_PATH to load a specific directory with a settings.json file in it
@@ -101,30 +141,41 @@ const loadProfileFromDisk = async (settingsDir: string, profileName?: string): P
     'utf8'
   );
 
-  profile.pki = {
-    algorithm: jwtAlgorithm,
-    audience: process.env.FUSEBIT_AUDIENCE || profile.baseUrl, // Provide an override for local test targets.
-    issuer: profile.issuer,
-    subject: profile.subject,
-    kid: profile.kid,
-    privateKey,
-    publicKey,
+  const result = {
+    profile,
+    type: 'pki',
+    pki: {
+      algorithm: jwtAlgorithm,
+      audience: process.env.FUSEBIT_AUDIENCE || profile.baseUrl, // Provide an override for local test targets.
+      issuer: profile.issuer,
+      subject: profile.subject,
+      kid: profile.kid,
+      privateKey,
+      publicKey,
+    },
   };
 
   debug(`${settingsDir}: loaded profile`);
-  return profile;
+  return result;
 };
 
-export const getAuthedProfile = async (profileName?: string): Promise<IProfile> => {
-  if (cachedJwt.expiresAt > Date.now() + JWT_CACHE_MARGIN) {
-    return { ...cachedFoundProfile, token: cachedJwt.token };
+export const getAuthedProfile = async (profileName?: string): Promise<IAuthedProfile> => {
+  if (cachedJwt.expiresAtMs > Date.now() + JWT_CACHE_MARGIN) {
+    return cachedJwt;
+  }
+
+  // Is there a profile in the environment?
+  const envProfile = loadEnvironmentToken();
+  if (envProfile) {
+    return envProfile;
   }
 
   const profile = await loadProfile(profileName);
+
   const options = {
-    algorithm: profile.pki.algorithm,
-    expiresIn: 60 * 60 * 24,
-    audience: profile.baseUrl,
+    algorithm: profile.pki.algorithm as jwt.Algorithm,
+    expiresIn: JWT_DEFAULT_EXPIRES_IN,
+    audience: profile.profile.baseUrl,
     issuer: profile.pki.issuer,
     subject: profile.pki.subject,
     keyid: profile.pki.kid,
@@ -134,9 +185,15 @@ export const getAuthedProfile = async (profileName?: string): Promise<IProfile> 
     },
   };
 
-  cachedJwt.expiresAt = Date.now() + 60 * 60 * 24 * 1000;
-  cachedJwt.token = jwt.sign({}, profile.pki.privateKey, options);
+  cachedJwt = {
+    account: profile.profile.account,
+    subscription: profile.profile.subscription,
+    baseUrl: profile.profile.baseUrl,
+    expiresAtMs: Date.now() + JWT_DEFAULT_EXPIRES_IN * 1000,
+    expiresAt: new Date(cachedJwt.expiresAtMs).toUTCString(),
+    accessToken: jwt.sign({}, profile.pki.privateKey, options),
+  };
 
-  debug(`${profile.keyPair}: generated pki key, expiring at ${new Date(cachedJwt.expiresAt).toUTCString()}`);
-  return { ...cachedFoundProfile, token: cachedJwt.token };
+  debug(`${profile.profile.keyPair}: generated pki key, expiring at ${cachedJwt.expiresAt}`);
+  return cachedJwt;
 };

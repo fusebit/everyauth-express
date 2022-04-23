@@ -1,6 +1,6 @@
 {
   "name": "@fusebit/everyauth-express",
-  "version": "1.0.4",
+  "version": "2.0.0",
   "description": "EveryAuth is the easiest way for your app to access APIs like Slack, Salesforce, or Github.",
   "main": "libc/index.js",
   "files": [

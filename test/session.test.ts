@@ -5,7 +5,7 @@ import * as everyauth from '../src';
 
 test('Starting a session returns a valid start url', async () => {
   process.env.EVERYAUTH_PROFILE_PATH = path.join(__dirname, 'mock', 'profile');
-  const profile = await everyauth.profile.loadProfile();
+  const profile = await everyauth.profile.getAuthedProfile();
 
   const startUrl = await everyauth.session.start('slack', undefined, 'user-1', 'https://localhost:3000');
   expect(startUrl).toMatch(

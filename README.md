@@ -166,10 +166,11 @@ EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job a
 
 The express middleware locates credentials in the following way, in priority order:
 
-1. Programmatically through code.
-2. JSON in the `EVERYAUTH_PROFILE_JSON` environment variable.
-3. The `EVERYAUTH_PROFILE_PATH` environment variable points to the `settings.json` file in a directory.
-4. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
+1. Programmatically through code via the `everyauth.config()` method.
+2. Use a base64-encoded JWT generated via `everyauth token | base64` in the `EVERYAUTH_TOKEN` environment variable.
+3. Use a base64-encoded profile generated via `everyauth profile export | base64` in the `EVERYAUTH_PROFILE_JSON` environment variable 
+4. The `EVERYAUTH_PROFILE_PATH` environment variable points to the `settings.json` file in a directory.
+5. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
 
 The EveryAuth CLI is always looking for credentials in the `~/.fusebit/settings.json` file created when you run `everyauth init`. You can copy the `~/.fusebit` directory between machines to access the same underlying account. 
 
@@ -243,6 +244,37 @@ Below is a short synopsis of the CLI commands. For detailed options, specify the
 #### everyauth init
 
 Performs one-time initialization of EveryAuth on a developer machine. This command will create a free Fusebit account and store the credentials necessary to access it in your home directory's `~/.fusebit/settings.json` file. Keep this file secret. You can also move the `.fusebit` directory to a new machine from which you want to access your EveryAuth configuration, like a CI/CD box or a second development machine. 
+
+#### everyauth profile export
+
+Exports to `stdout` a JSON-encoded profile object which can be used with `everyauth profile import`, or
+set in the environment after base64 encoding within `EVERYAUTH_PROFILE_JSON` to support generating keys in
+production to authenticate to the EveryAuth backend.
+
+**Example:** Encode the profile to generate short-lived JWT keys dynamically in production, and store it in a
+`.env` file.
+
+```
+echo EVERYAUTH_PROFILE_JSON=`everyauth profile export | base64` >> .env
+```
+
+#### everyauth profile import
+
+Supports importing, from `stdin` or a file, a previously existing profile.
+
+#### everyauth token
+
+Generates a JSON-encoded JWT that, once base64-encoded, can be placed within the `EVERYAUTH_TOKEN` environment variable to
+be automatically used by the middleware to communicate with the EveryAuth backend.
+
+Supports a `--expires` parameter that allows for a custom expiration time specified via standard
+[ms](https://www.npmjs.com/package/ms) interval encoding.  The default expiration interval is `2h` (two hours).
+
+**Example:** Generate a token valid for 12 weeks, and store it in a `.env` file.
+
+```
+echo EVERYAUTH_TOKEN=`everyauth token --expires 12w | base64` >> .env
+```
 
 #### everyauth service ls
 

@@ -167,7 +167,7 @@ export const deleteIdentity = async (serviceId: string, identityId: string): Pro
   const identity = await superagent
     .get(`${baseUrl}${conUrl}/identity/${identityId}`)
     .set('User-Agent', EveryAuthVersion)
-    .set('Authorization', `Bearer ${profile.token}`)
+    .set('Authorization', `Bearer ${profile.accessToken}`)
     .ok(() => true);
 
   if (identity.statusCode === 404) {
@@ -188,7 +188,7 @@ export const deleteIdentity = async (serviceId: string, identityId: string): Pro
     await superagent
       .delete(`${baseUrl}${intUrl}/install/${installId}`)
       .set('User-Agent', EveryAuthVersion)
-      .set('Authorization', `Bearer ${profile.token}`)
+      .set('Authorization', `Bearer ${profile.accessToken}`)
       .ok(() => true);
   }
 
@@ -196,7 +196,7 @@ export const deleteIdentity = async (serviceId: string, identityId: string): Pro
   await superagent
     .delete(`${baseUrl}${conUrl}/identity/${identityId}`)
     .set('User-Agent', EveryAuthVersion)
-    .set('Authorization', `Bearer ${profile.token}`)
+    .set('Authorization', `Bearer ${profile.accessToken}`)
     .ok(() => true);
 };
 
@@ -207,7 +207,7 @@ const getTokenForIdentity = async (serviceId: string, identityId: string): Promi
   const tokenResponse = await superagent
     .get(`${baseUrl}${tokenPath}`)
     .set('User-Agent', EveryAuthVersion)
-    .set('Authorization', `Bearer ${profile.token}`);
+    .set('Authorization', `Bearer ${profile.accessToken}`);
 
   const connectorToken = tokenResponse.body;
   const isEmpty = !connectorToken || Object.keys(connectorToken).length === 0;

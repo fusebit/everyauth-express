@@ -59,7 +59,7 @@ export const getChildrenByTags = async <ISearchResultType>(
   const response = await superagent
     .get(`${baseUrl}/${childElementType}/?${keyOnly.join('&')}${keyOnly.length ? '&' : ''}${params.toString()}`)
     .set('User-Agent', EveryAuthVersion)
-    .set('Authorization', `Bearer ${profile.token}`);
+    .set('Authorization', `Bearer ${profile.accessToken}`);
 
   return response.body;
 };
