@@ -167,7 +167,7 @@ EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job a
 The express middleware locates credentials in the following way, in priority order:
 
 1. Programmatically through code via the `everyauth.config()` method.
-2. Use a base64-encoded JWT generated via `everyauth token | base64` in the `EVERYAUTH_TOKEN` environment variable.
+2. Use a token generated via `everyauth token` in the `EVERYAUTH_TOKEN` environment variable.
 3. Use a base64-encoded profile generated via `everyauth profile export | base64` in the `EVERYAUTH_PROFILE_JSON` environment variable 
 4. The `EVERYAUTH_PROFILE_PATH` environment variable points to the `settings.json` file in a directory.
 5. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
@@ -264,8 +264,8 @@ Supports importing, from `stdin` or a file, a previously existing profile.
 
 #### everyauth token
 
-Generates a JSON-encoded JWT that, once base64-encoded, can be placed within the `EVERYAUTH_TOKEN` environment variable to
-be automatically used by the middleware to communicate with the EveryAuth backend.
+Generates a token that can be placed within the `EVERYAUTH_TOKEN` environment variable to be automatically
+used by the middleware to communicate with the EveryAuth backend.
 
 Supports a `--expires` parameter that allows for a custom expiration time specified via standard
 [ms](https://www.npmjs.com/package/ms) interval encoding.  The default expiration interval is `2h` (two hours).
@@ -273,7 +273,7 @@ Supports a `--expires` parameter that allows for a custom expiration time specif
 **Example:** Generate a token valid for 12 weeks, and store it in a `.env` file.
 
 ```
-echo EVERYAUTH_TOKEN=`everyauth token --expires 12w | base64` >> .env
+echo EVERYAUTH_TOKEN=`everyauth token --expires 12w` >> .env
 ```
 
 #### everyauth service ls
