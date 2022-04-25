@@ -1,11 +1,9 @@
 {
   "name": "@fusebit/everyauth-express",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "EveryAuth is the easiest way for your app to access APIs like Slack, Salesforce, or Github.",
   "main": "libc/index.js",
-  "files": [
-    "libc/**/*"
-  ],
+  "files": ["libc/**/*"],
   "scripts": {
     "build": "tsc -b",
     "test": "jest --testPathIgnorePatterns test/manual",
