@@ -21,7 +21,7 @@
     "type": "git",
     "url": "git+https://github.com/fusebit/everyauth-express.git"
   },
-  "author": "",
+  "author": "Fusebit, Inc",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/fusebit/everyauth-express/issues"

@@ -1,13 +1,17 @@
 import * as express from 'express';
 
 import { USER_TAG, TENANT_TAG } from './constants';
+import { IEveryAuthTagSet } from './identity';
 
 import * as session from './session';
 
 import debugModule from 'debug';
 const debug = debugModule('everyauth:authorize');
-const dbg = ({ serviceId, userId, tenantId }: { serviceId: string; userId: string; tenantId: string }, msg: string) => {
-  debug(`${serviceId}[${tenantId || ''}${tenantId ? '/' : ''}${userId}]: ${msg}`);
+const dbg = (
+  { serviceId, userId, tenantId }: { serviceId: string; userId?: string; tenantId?: string },
+  msg: string
+) => {
+  debug(`${serviceId}[${tenantId || ''}${tenantId ? '/' : ''}${userId || 'NA'}]: ${msg}`);
 };
 
 export interface IEveryAuthContext {
@@ -21,6 +25,11 @@ export interface IEveryAuthContext {
 
   tenantId: string /** The tenantId supplied by the mapToTenantId function for this request, or the userId if not supplied. */;
   userId: string /** The userId supplied by the mapToUserId function for this request. */;
+}
+
+export interface IAuthorizedContext {
+  serviceId: string;
+  tags: IEveryAuthTagSet;
 }
 
 export interface IEveryAuthOptions {
@@ -56,7 +65,15 @@ export interface IEveryAuthOptions {
    * subsequent requests.  Usually extracts the value from the output of the authorization system, or can be a
    * constant for experimentation and testing purposes.
    */
-  mapToUserId: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
+  mapToUserId?: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
+
+  /**
+   * Called after a user successfully authorized to a target service but before their identity has been persisted.
+   * Perform any side-effect operations like removing prior identities that are no longer needed.
+   */
+  onAuthorized?:
+    | ((req: express.Request, ctx: IAuthorizedContext) => Promise<void>)
+    | ((req: express.Request, ctx: IAuthorizedContext) => void);
 }
 
 /**
@@ -136,7 +153,7 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
   };
 
   router.get('/', async (req: express.Request, res: express.Response) => {
-    const userId = await options.mapToUserId(req);
+    const userId = options.mapToUserId ? await options.mapToUserId(req) : undefined;
     const tenantId = options.mapToTenantId ? await options.mapToTenantId(req) : userId;
     const hostedBaseUrl = getHostedBaseUrl(options, req);
 
@@ -167,7 +184,7 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
     }
 
     // Update the session object if it's changed
-    const { identityId, tenantId, userId } = await session.commit(serviceId, sessionId);
+    const { identityId, tenantId, userId } = await session.commit(req, serviceId, sessionId, options);
 
     dbg({ serviceId, userId, tenantId }, `Success ${identityId}`);
 

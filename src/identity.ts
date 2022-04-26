@@ -77,8 +77,8 @@ export const getIdentity = async (
       });
     } else if (identityOrIdsOrTags.userId || identityOrIdsOrTags.tenantId) {
       identities = await getIdentitiesByTags(serviceId, {
-        [USER_TAG]: identityOrIdsOrTags.userId,
-        [TENANT_TAG]: identityOrIdsOrTags.tenantId || identityOrIdsOrTags.userId,
+        ...((identityOrIdsOrTags.userId && { [USER_TAG]: identityOrIdsOrTags.userId }) || {}),
+        ...((identityOrIdsOrTags.tenantId && { [TENANT_TAG]: identityOrIdsOrTags.tenantId }) || {}),
       });
     } else {
       identities = await getIdentitiesByTags(serviceId, identityOrIdsOrTags as IEveryAuthTagSet);
@@ -128,7 +128,6 @@ export const getIdentities = async (
     identities = await getIdentitiesByTags(
       serviceId,
       {
-        [SERVICE_TAG]: serviceId,
         ...('userId' in idsOrTags ? { [USER_TAG]: idsOrTags.userId } : {}),
         ...('tenantId' in idsOrTags ? { [TENANT_TAG]: idsOrTags.tenantId } : {}),
       },
@@ -149,6 +148,33 @@ export const getIdentities = async (
     })),
     next: identities.next,
   };
+};
+
+/**
+ * Deletes all matching identities.
+ *
+ * @param serviceId The service to search for matching identities within.
+ * @param idsOrTags Either a { userId, tenantId } that can be used to search for a matching identity, or a set of
+ * tags that will be used to search. Pass 'null' to delete all identities for a service.
+ */
+export const deleteIdentities = async (
+  serviceId: string,
+  idsOrTags: IEveryAuthUserTenantSet | IEveryAuthTagSet | null
+): Promise<void> => {
+  if (idsOrTags === undefined || (idsOrTags && Object.keys(idsOrTags).length === 0)) {
+    throw new Error(
+      "The 'idsOrTags' parameter, if not null, must specify at least one identity selection criteria to prevent accidentally deleting all identitites. " +
+        "If you really want to delete all identities, specify 'null' for 'idsOrTags'."
+    );
+  }
+  let options: IEveryAuthSearchOptions | undefined = undefined;
+  do {
+    const identities: IEveryAuthIdentitySearch = await getIdentities(serviceId, idsOrTags || {}, options);
+    for (const identity of identities.items) {
+      await deleteIdentity(serviceId, identity.id);
+    }
+    options = identities.next ? { next: identities.next } : undefined;
+  } while (options);
 };
 
 /**

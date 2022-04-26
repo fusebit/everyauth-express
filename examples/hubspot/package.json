@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "https://fusebit.io",
+  "author": "Fusebit, Inc",
   "license": "ISC",
   "dependencies": {
     "@hubspot/api-client": "^6.0.1-beta.6",

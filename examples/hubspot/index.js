@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 // The management page that shows connected services
 app.get(`/integrations`, async (req, res) => {
   // Check if the user's organization has already authorized access to SFDC
-  const credentials = await everyauth.getIdentity(serviceId, { userId, tenantId }); // TODO: this should only be tenantId
+  const credentials = await everyauth.getIdentity(serviceId, { tenantId });
   if (credentials) {
     // Present options to reconnect or disconnect, and test
     res.send(`
@@ -54,7 +54,7 @@ app.use(
 );
 
 // Endpoint redirected to when HubSpot authorization process has completed
-app.get('/integrations/hubspot/connected', async (req, res) => {
+app.get('/integrations/hubspot/connected', (req, res) => {
   if (req.query.error) {
     res.send(`<p>There was an error authorizing access to HubSpot: ${req.query.error}<p>`);
   } else {
@@ -64,10 +64,7 @@ app.get('/integrations/hubspot/connected', async (req, res) => {
 
 // Endpoint used to disconnect from a service
 app.get('/integrations/hubspot/disconnect', async (req, res) => {
-  const identities = await everyauth.getIdentities(serviceId, { userId, tenantId }); // TODO: this should only be tenantId
-  for (const identity of identities.items) {
-    await everyauth.deleteIdentity(serviceId, identity.id);
-  }
+  await everyauth.deleteIdentities(serviceId, { tenantId });
   res.redirect('/integrations');
 });
 
@@ -75,7 +72,7 @@ app.get('/integrations/hubspot/disconnect', async (req, res) => {
 app.get('/newsletter/signup', async (req, res) => {
   if (req.query.email) {
     // Process form submission
-    const credentials = await everyauth.getIdentity(serviceId, { userId, tenantId }); // TODO: this should only be tenantId
+    const credentials = await everyauth.getIdentity(serviceId, { tenantId });
     if (credentials) {
       // Salesforce is connected, create a Contact record
       const hubspotClient = new Client({ accessToken: credentials.accessToken });
@@ -84,10 +81,11 @@ app.get('/newsletter/signup', async (req, res) => {
           email: req.query.email,
         },
       });
-      console.log('CONTACT', contact);
       res.send(`Thank you for signing up to the newsletter!<br>HubSpot ID: ${contact.id}`);
     } else {
-      res.send(`Thank you for signing up to the newsletter!`);
+      res.send(
+        `Thank you for signing up to the newsletter!<br>Salesforce Contact not created (Salesforce not connected).`
+      );
     }
   } else {
     // Send signup form
