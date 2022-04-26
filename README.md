@@ -438,8 +438,7 @@ for (const item of identities.items) {
 |------|------|-------------|
 | `accessToken` | string | An access token to call the service APIs. The token is guaranteed to be valid. |
 | `native` | object | A representation of the security credential native to the service that generated it. See the [Supported services](#supported-services) section for details of a specific service. |
-| `fusebit` | object | A collection of values, including the `identityId`, that uniquely identify this
-credential. |
+| `fusebit` | object | A collection of values, including the `identityId`, that uniquely identify this credential. |
 
 #### IEveryAuthIdentity
 
