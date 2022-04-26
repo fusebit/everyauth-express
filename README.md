@@ -359,7 +359,7 @@ The `finishedUrl` may receive the following query string parameters on completio
 
 | name | type | description |
 |------|------|-------------|
-| `serviceIdOrFunc` | string&nbsp;\| (req:&nbsp;express.Request)&nbsp;=>&nbsp;Promise&lt;string&gt; | The name of the remote service to get authorization from the user, or a function to extract that from the request. |
+| `serviceIdOrFunc` | string&nbsp;\| (req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;Promise&lt;string&gt; | The name of the remote service to get authorization from the user, or a function to extract that from the request. |
 | `options` | [EveryAuthOptions](#everyauthoptions) | Options controlling the behavior of the middleware. |
 
 #### getIdentity(serviceId, identityOrIdsOrTags)
@@ -428,7 +428,7 @@ for (const item of identities.items) {
 | name | type | description |
 |------|------|-------------|
 | `finishedUrl` | string | The absolute or relative path to send the user to after completing the authorization flow. |
-| `finishedUrlOrFunc` | string&nbsp;\| (req:&nbsp;express.Request)&nbsp;=>&nbsp;Promise&lt;string&gt; | The absolute or relative path to send the user to after completing the authorization flow, or a function to extract that from the request. |
+| `finishedUrlOrFunc` | string&nbsp;\| (req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;Promise&lt;string&gt; | The absolute or relative path to send the user to after completing the authorization flow, or a function to extract that from the request. |
 | `mapToUserId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string user id to identify the user in your system and later allow querying EveryAuth for credentials owned by that user. |
 | `mapToTenantId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string tenant id to identify the tenant in your system, and allow querying EveryAuth for credentials owned by that tenant. If you don't specify this callback, the value of the tenant id will be set to the same value as the user id. |
 
