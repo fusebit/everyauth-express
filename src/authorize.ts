@@ -75,10 +75,14 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
   }
 
   // Discovery time!
-  //
+
+  // Normalize original URL by removing query
+  const i = req.originalUrl.indexOf('?');
+  const originalUrl = i < 0 ? req.originalUrl : req.originalUrl.substring(0, i);
+
   // Sometimes the originalUrl includes the entire request, sometimes it doesn't!
-  if (req.originalUrl.startsWith('http')) {
-    return req.originalUrl;
+  if (originalUrl.startsWith('http')) {
+    return originalUrl;
   }
 
   // req.hostname doesn't preserve the port, unfortunately, so test the Host header to see if it's present.
@@ -88,7 +92,7 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
   }
 
   // Return a hopefully valid URL.
-  return `${req.protocol}://${req.hostname}${port}${req.originalUrl}`;
+  return `${req.protocol}://${req.hostname}${port}${originalUrl}`;
 };
 
 /**

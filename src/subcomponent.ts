@@ -24,7 +24,7 @@ export const getChildrenByTags = async <ISearchResultType>(
 
   // eslint-disable-next-line security/detect-object-injection
   if (!tags[USER_TAG]) {
-    throw new Error(`Missting tag ${USER_TAG}`);
+    throw new Error(`Missing tag ${USER_TAG}`);
   }
 
   // Convert the IEveryAuthTagSet into the right query parameters
