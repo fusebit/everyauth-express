@@ -53,27 +53,33 @@ app.use(
 );
 
 app.get('/finished', handleSession, async (req, res) => {
-  const userCredentials = await everyauth.getIdentity("slack", req.session.userId);
-    // Call Slack API
+  const userCredentials = await everyauth.getIdentity('slack', req.session.userId);
+  // Call Slack API
   const slackClient = new WebClient(userCredentials.accessToken);
-  const userResponse = await slackClient.users.info({ user: userCredentials.native.authed_user.id })
-  await slackClient.chat.postMessage({
-    text: 'Hello world from EveryAuth!',
-    channel: "#lizz-test",
-  });
-  res.render('index', { title: 'user profile', user: userResponse.user })
+  const userResponse = await slackClient.users.info({ user: userCredentials.native.authed_user.id });
+  res.render('index', { title: 'user profile', user: userResponse.user });
 });
 
 app.post('/message', handleSession, async (req, res) => {
-  const userCredentials = await everyauth.getIdentity("slack", req.session.userId);
-    // Call Slack API
+  const userCredentials = await everyauth.getIdentity('slack', req.session.userId);
+  // Call Slack API
   const slackClient = new WebClient(userCredentials.accessToken);
-  const userResponse = await slackClient.users.info({ user: userCredentials.native.authed_user.id })
-  await slackClient.chat.postMessage({
-    text: req.body.message || "Please send a message",
-    channel: "#lizz-test",
+  const userResponse = await slackClient.users.info({ user: userCredentials.native.authed_user.id });
+  const message = req.body.message;
+
+  if (message) {
+    await slackClient.chat.postMessage({
+      text: message,
+      channel: userCredentials.native.authed_user.id,
+    });
+  }
+
+  res.render('index', {
+    title: 'user profile',
+    user: userResponse.user,
+    messageSent: !!message,
+    message: req.body.message || 'Please write a message',
   });
-  res.render('index', { title: 'user profile', user: userResponse.user, messageSent: true });
 });
 
 app.listen(port, () => {
