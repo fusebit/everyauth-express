@@ -17,9 +17,16 @@ export interface INative {
   bot_user_id: string;
   access_token: string;
   is_enterprise_install: boolean;
+  fusebit: {
+    accountId: string;
+    subscriptionId: string;
+    serviceId: string;
+    identityId: string;
+  };
 }
 
 export const normalize = (native: INative) => ({
   native,
   accessToken: native.access_token,
+  fusebit: native.fusebit,
 });
