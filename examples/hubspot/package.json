@@ -1,0 +1,15 @@
+{
+  "name": "everyauth-hubspot",
+  "version": "1.0.0",
+  "description": "Using EveryAuth with HubSpot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "https://fusebit.io",
+  "license": "ISC",
+  "dependencies": {
+    "@hubspot/api-client": "^6.0.1-beta.6",
+    "express": "^4.18.0"
+  }
+}
