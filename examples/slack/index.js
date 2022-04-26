@@ -7,7 +7,7 @@ const { WebClient } = require('@slack/web-api');
 const app = express();
 const port = 3000;
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
 // Get userId from the authorization redirect or via session if already authorized.
 const handleSession = (req, res, next) => {
