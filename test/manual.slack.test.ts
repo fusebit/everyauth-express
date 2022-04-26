@@ -50,7 +50,10 @@ const startServer = async (): Promise<IServer> => {
   return { app, listener, port, close: async () => httpTerminator.terminate() };
 };
 
-const runTest = async (serviceId: string, options?: { deny?: boolean } & Partial<everyauth.IEveryAuthOptions>) => {
+const runTest = async (
+  serviceId: string,
+  options?: { deny?: boolean; functions?: boolean } & Partial<everyauth.IEveryAuthOptions>
+) => {
   const server = await startServer();
 
   const [completeResolve, completePromise] = getResolve<void>();
@@ -59,13 +62,17 @@ const runTest = async (serviceId: string, options?: { deny?: boolean } & Partial
 
   server.app.get('/allow', (req: express.Request, res: express.Response) => {
     res.send(
-      '<html><body style="background-color:#00c100"><br/>ALLOW<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>'
+      `<html><body style="background-color:#00c100"><br/>ALLOW<br/><br/><p style="font-size:40px"><a href="/${
+        req.query.functions ? 'also/slack' : 'slack'
+      }">continue</a></p></body></html>`
     );
   });
 
   server.app.get('/reject', (req: express.Request, res: express.Response) => {
     res.send(
-      '<html><body style="background-color:#c10000"><br/>CANCEL<br/><br/><p style="font-size:40px"><a href="/slack">continue</a></p></body></html>'
+      `<html><body style="background-color:#c10000"><br/>CANCEL<br/><br/><p style="font-size:40px"><a href="/${
+        req.query.functions ? 'also/slack' : 'slack'
+      }">continue</a></p></body></html>`
     );
   });
 
@@ -74,6 +81,15 @@ const runTest = async (serviceId: string, options?: { deny?: boolean } & Partial
     '/slack',
     everyauth.authorize(serviceId, {
       finishedUrl: '/complete',
+      mapToUserId: () => 'user-1',
+      ...(options ? options : {}),
+    })
+  );
+
+  server.app.use(
+    '/also/:serviceId',
+    everyauth.authorize(async (req) => req.params.serviceId, {
+      finishedUrl: async () => '/complete',
       mapToUserId: () => 'user-1',
       ...(options ? options : {}),
     })
@@ -93,7 +109,9 @@ const runTest = async (serviceId: string, options?: { deny?: boolean } & Partial
   });
 
   // Open the browser to test, and wait for the process to complete
-  open(`http://localhost:${server.port}/${options?.deny ? 'reject' : 'allow'}`);
+  open(
+    `http://localhost:${server.port}/${options?.deny ? 'reject' : 'allow'}${options?.functions ? '?functions' : ''}`
+  );
   await completePromise;
 
   await server.close();
@@ -126,6 +144,13 @@ describe('Manual Test Cases', () => {
 
   test('Manual: Exercise getIdentity(userId)', async () => {
     const userCredentials = await everyauth.getIdentity('slack', 'user-1');
+    expect(userCredentials).toBeDefined();
+    expect(userCredentials?.accessToken).toBeDefined();
+    expect(userCredentials?.fusebit.accountId).toBeDefined();
+    expect(userCredentials?.fusebit.subscriptionId).toBeDefined();
+    expect(userCredentials?.fusebit.serviceId).toBe('slack');
+    expect(userCredentials?.fusebit.identityId).toBeDefined();
+
     const slack = new WebClient(userCredentials?.accessToken);
     const result = await slack.chat.postMessage({
       text: 'Hello World from EveryAuth: getIdentity',
@@ -152,8 +177,8 @@ describe('Manual Test Cases', () => {
     );
   }, 30000);
 
-  test('Manual: Re-auth a user', async () => {
-    const result = await runTest('slack');
+  test('Manual: Re-auth a user, with alt configuration', async () => {
+    const result = await runTest('slack', { functions: true });
     expect(result).toBe('success');
   }, 30000);
 
