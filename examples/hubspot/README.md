@@ -2,7 +2,7 @@
 
 EveryAuth is the easiest way for your app to access HubSpot APIs. This is a sample Express application that demonstrates the use of EveryAuth in a hypothetical newsletter platform to connect to HubSpot and create new HubSpot Contact on newsletter signup. 
 
-Follow the [Integrating with HubSpot using Everyauth](https://fusebit.io/blog/everyauth-hubspot) blog post for detailed instructions.
+Follow the [Integrating with HubSpot using EveryAuth](https://fusebit.io/blog/everyauth-hubspot) blog post for detailed instructions.
 
 ## Running the Sample App
 
@@ -36,6 +36,6 @@ After authorization has completed, click the *Test newsletter signup* button, en
 
 ## References
 
-* [Integrating with HubSpot using Everyauth](https://fusebit.io/blog/everyauth-hubspot) blog post.  
+* [Integrating with HubSpot using EveryAuth](https://fusebit.io/blog/everyauth-hubspot) blog post.  
 * [fusebit/everyauth-express](https://github.com/fusebit/everyauth-express) project documentation.  
 * [HubSpot EveryAuth](https://github.com/fusebit/everyauth-express/blob/main/docs/hubspot.md) documentation.  

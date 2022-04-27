@@ -43,8 +43,8 @@ export const getChildrenByTags = async <ISearchResultType>(
       params.set('next', options.next);
     }
 
-    if (options.pageSize) {
-      params.set('pageSize', `${options.pageSize}`);
+    if (options.count) {
+      params.set('count', `${options.count}`);
     }
   }
 

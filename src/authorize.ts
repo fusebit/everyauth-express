@@ -27,7 +27,7 @@ export interface IEveryAuthContext {
   userId: string /** The userId supplied by the mapToUserId function for this request. */;
 }
 
-export interface IAuthorizedContext {
+export interface IEveryAuthAuthorizedContext {
   serviceId: string;
   tags: IEveryAuthTagSet;
 }
@@ -49,7 +49,7 @@ export interface IEveryAuthOptions {
   hostedBaseUrl?: string | ((req: express.Request) => string);
 
   /**
-   * Map the current request to a unique tenantId that can be used to retrieve the authorized token on
+   * Map the current request to a tenantId that can be used to retrieve the authorized token on
    * subsequent requests.  Usually extracts the value from the output of the authorization system, or can be a
    * constant for experimentation and testing purposes.
    *
@@ -61,7 +61,7 @@ export interface IEveryAuthOptions {
   mapToTenantId?: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
 
   /**
-   * Map the current request to a unique userId tag that can be used to retrieve the authorized token on
+   * Map the current request to a userId tag that can be used to retrieve the authorized token on
    * subsequent requests.  Usually extracts the value from the output of the authorization system, or can be a
    * constant for experimentation and testing purposes.
    */
@@ -72,8 +72,8 @@ export interface IEveryAuthOptions {
    * Perform any side-effect operations like removing prior identities that are no longer needed.
    */
   onAuthorized?:
-    | ((req: express.Request, ctx: IAuthorizedContext) => Promise<void>)
-    | ((req: express.Request, ctx: IAuthorizedContext) => void);
+    | ((req: express.Request, ctx: IEveryAuthAuthorizedContext) => Promise<void>)
+    | ((req: express.Request, ctx: IEveryAuthAuthorizedContext) => void);
 }
 
 /**

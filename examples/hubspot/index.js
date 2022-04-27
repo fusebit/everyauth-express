@@ -74,7 +74,7 @@ app.get('/newsletter/signup', async (req, res) => {
     // Process form submission
     const credentials = await everyauth.getIdentity(serviceId, { tenantId });
     if (credentials) {
-      // Salesforce is connected, create a Contact record
+      // HubSpot is connected, create a Contact record
       const hubspotClient = new Client({ accessToken: credentials.accessToken });
       const contact = await hubspotClient.crm.contacts.basicApi.create({
         properties: {
@@ -83,9 +83,7 @@ app.get('/newsletter/signup', async (req, res) => {
       });
       res.send(`Thank you for signing up to the newsletter!<br>HubSpot ID: ${contact.id}`);
     } else {
-      res.send(
-        `Thank you for signing up to the newsletter!<br>Salesforce Contact not created (Salesforce not connected).`
-      );
+      res.send(`Thank you for signing up to the newsletter!<br>HubSpot Contact not created (HubSpot not connected).`);
     }
   } else {
     // Send signup form

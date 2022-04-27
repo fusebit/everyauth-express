@@ -86,7 +86,9 @@ app.get('/newsletter/signup', async (req, res) => {
       });
       res.send(`Thank you for signing up to the newsletter!<br>Salesforce ID: ${contact.id}`);
     } else {
-      res.send(`Thank you for signing up to the newsletter!<br>HubSpot Contact not created (HubSpot not connected).`);
+      res.send(
+        `Thank you for signing up to the newsletter!<br>Salesforce Contact not created (Salesforce not connected).`
+      );
     }
   } else {
     // Send signup form

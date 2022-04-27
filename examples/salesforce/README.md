@@ -1,8 +1,8 @@
 # EveryAuth Salesforce Sample
 
-EveryAuth is the easiest way for your app to access Salesforce APIs. This is a sample Express application that demonstrates the use of EveryAuth in a hypothetical newlestter platform to connect to Salesforce and create new Salesforce Contacts on newsletter signup. 
+EveryAuth is the easiest way for your app to access Salesforce APIs. This is a sample Express application that demonstrates the use of EveryAuth in a hypothetical newsletter platform to connect to Salesforce and create new Salesforce Contacts on newsletter signup. 
 
-Follow the [Integrating with Salesforce using Everyauth](https://fusebit.io/blog/everyauth-salesforce) blog post for detailed instructions.
+Follow the [Integrating with Salesforce using EveryAuth](https://fusebit.io/blog/everyauth-salesforce) blog post for detailed instructions.
 
 ## Running the Sample App
 
@@ -36,6 +36,6 @@ After authorization has completed, click the *Test newsletter signup* button, en
 
 ## References
 
-* [Integrating with Salesforce using Everyauth](https://fusebit.io/blog/everyauth-salesforce) blog post.  
+* [Integrating with Salesforce using EveryAuth](https://fusebit.io/blog/everyauth-salesforce) blog post.  
 * [fusebit/everyauth-express](https://github.com/fusebit/everyauth-express) project documentation.  
 * [Salesforce EveryAuth](https://github.com/fusebit/everyauth-express/blob/main/docs/sfdc.md) documentation.  

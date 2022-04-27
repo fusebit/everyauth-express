@@ -414,7 +414,7 @@ for (const item of identities.items) {
 |------|------|-------------|
 | `serviceId` | string | The name of the remote service the user should be authenicated with. |
 | `idsOrTags` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null| A set of tags returned identities must have. |
-| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` to get a next page of matching identities. Specify the `pageSize` property to indicate the desired maximum number of results to return. |
+| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` to get a next page of matching identities. Specify the `count` property to indicate the desired maximum number of results to return. |
 
 ##### Return  <!-- omit in toc -->
 
@@ -431,8 +431,8 @@ Deletes an existing identity.
 import everyauth from "@fusebit/everyauth-express";
 
 // Delete single identity
-const identityId = "idn-123"; // returned as part of getIdentitity and getIdentities
-await everyauth.deleteIdentity("slack", identityId);
+const identity = await everyauth.getIdentity("slack", { userId });
+await everyauth.deleteIdentity("slack", identity.fusebit.identityId);
 ```
 
 ##### Parameters  <!-- omit in toc -->
@@ -468,9 +468,9 @@ await everyauth.deleteIdentities("slack", { tenantId });
 | `finishedUrl` | string | The absolute or relative path to send the user to after completing the authorization flow. |
 | `mapToUserId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string user id to identify the user in your system and later allow querying EveryAuth for credentials owned by that user. |
 | `mapToTenantId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string tenant id to identify the tenant in your system, and allow querying EveryAuth for credentials owned by that tenant. If you don't specify this callback, the value of the tenant id will be set to the same value as the user id. |
-| `onCompleted` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req), ctx:&nbsp;[IAuthorizedContext](#iauthorizedcontext))&nbsp;=>&nbsp;void | Called after a user successfully authorized to a target service but before their identity has been persisted. Perform any side-effect operations like removing prior identities that are no longer needed. |
+| `onCompleted` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req), ctx:&nbsp;[IEveryAuthAuthorizedContext](#ieveryauthauthorizedcontext))&nbsp;=>&nbsp;void | Called after a user successfully authorized to a target service but before their identity has been persisted. Perform any side-effect operations like removing prior identities that are no longer needed. |
 
-#### IAuthorizedContext
+#### IEveryAuthAuthorizedContext
 
 | name | type | description |
 |------|------|-------------|

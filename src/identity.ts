@@ -33,7 +33,7 @@ interface IEveryAuthIdentitySearch {
 /** Options that control the pagination of getIdentities requests. */
 export interface IEveryAuthSearchOptions {
   next?: string;
-  pageSize?: number;
+  count?: number;
 }
 
 /** A specific credential associated with an identityId, normalized to provide a standard interface. */
@@ -167,14 +167,12 @@ export const deleteIdentities = async (
         "If you really want to delete all identities, specify 'null' for 'idsOrTags'."
     );
   }
-  let options: IEveryAuthSearchOptions | undefined = undefined;
+  let options: IEveryAuthSearchOptions = { count: 10 };
   do {
     const identities: IEveryAuthIdentitySearch = await getIdentities(serviceId, idsOrTags || {}, options);
-    for (const identity of identities.items) {
-      await deleteIdentity(serviceId, identity.id);
-    }
-    options = identities.next ? { next: identities.next } : undefined;
-  } while (options);
+    await Promise.all(identities.items.map((identity) => deleteIdentity(serviceId, identity.id)));
+    options = { next: identities.next, count: 10 };
+  } while (options.next);
 };
 
 /**
