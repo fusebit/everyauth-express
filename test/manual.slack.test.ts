@@ -232,7 +232,7 @@ describe('Manual Test Cases', () => {
 
   test('Manual: Validate that deleteIdentities removes all identities', async () => {
     await everyauth.deleteIdentities('slack', null);
-    let identities = await everyauth.getIdentities('slack', { userId: 'user-1' });
+    const identities = await everyauth.getIdentities('slack', { userId: 'user-1' });
     expect(identities.items.length).toBe(0);
   }, 30000);
 });
