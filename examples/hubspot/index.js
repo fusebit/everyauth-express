@@ -1,6 +1,6 @@
 const express = require('express');
 const { Client } = require('@hubspot/api-client');
-const everyauth = require('../..');
+const everyauth = require('@fusebit/everyauth-express');
 
 const app = express();
 const port = 3000;

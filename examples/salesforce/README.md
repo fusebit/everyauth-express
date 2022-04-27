@@ -8,29 +8,16 @@ Follow the [Integrating with Salesforce using EveryAuth](https://fusebit.io/blog
 
 Make sure to follow the one-time [EveryAuth setup instructions](../README.md) first.
 
-Clone and build the repo:
+Next, clone and the repo, install dependencies, and run the sample app:
 
 ```bash
 git clone git@github.com:fusebit/everyauth-express.git
-cd everyauth-express
+cd everyauth-express/examples/salesforce
 npm i
-npm run build
-```
-
-Install sample dependencies:
-
-```bash
-cd examples/salesforce
-npm i
-```
-
-Run the sample app:
-
-```bash
 node index.js
 ```
 
-Navigate to `http://localhost:3000/integration`, click the *Connect* button to authorize access to Salesforce. 
+Then, navigate to `http://localhost:3000/integration`, click the *Connect* button to authorize access to Salesforce. 
 
 After authorization has completed, click the *Test newsletter signup* button, enter your e-mail address, and click *Submit*. A record will be created in the Salesforce instance you have connected to.
 

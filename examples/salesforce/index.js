@@ -1,6 +1,6 @@
 const express = require('express');
 const jsforce = require('jsforce');
-const everyauth = require('../..');
+const everyauth = require('@fusebit/everyauth-express');
 
 const app = express();
 const port = 3000;
