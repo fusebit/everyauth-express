@@ -100,7 +100,7 @@ export const commit = async (
 
   // Invoke callback if provided
   if (options.onAuthorized) {
-    let result = await superagent
+    const result = await superagent
       .get(`${baseUrl}/session/${sessionId}/`)
       .set('User-Agent', EveryAuthVersion)
       .set('Authorization', `Bearer ${profile.accessToken}`);
