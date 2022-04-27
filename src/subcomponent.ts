@@ -22,11 +22,6 @@ export const getChildrenByTags = async <ISearchResultType>(
     throw new Error(`Missing tag ${SERVICE_TAG}`);
   }
 
-  // eslint-disable-next-line security/detect-object-injection
-  if (!tags[USER_TAG]) {
-    throw new Error(`Missting tag ${USER_TAG}`);
-  }
-
   // Convert the IEveryAuthTagSet into the right query parameters
   const params = new URLSearchParams();
   const keyOnly: string[] = [];
@@ -48,8 +43,8 @@ export const getChildrenByTags = async <ISearchResultType>(
       params.set('next', options.next);
     }
 
-    if (options.pageSize) {
-      params.set('pageSize', `${options.pageSize}`);
+    if (options.count) {
+      params.set('count', `${options.count}`);
     }
   }
 

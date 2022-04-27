@@ -413,8 +413,8 @@ for (const item of identities.items) {
 | name | type | description |
 |------|------|-------------|
 | `serviceId` | string | The name of the remote service the user should be authenicated with. |
-| `tags` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null| A set of tags returned identities must have. |
-| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` to get a next page of matching identities. Specify the `pageSize` property to indicate the desired maximum number of results to return. |
+| `idsOrTags` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null| A set of tags returned identities must have. |
+| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` to get a next page of matching identities. Specify the `count` property to indicate the desired maximum number of results to return. |
 
 ##### Return  <!-- omit in toc -->
 
@@ -422,6 +422,44 @@ for (const item of identities.items) {
 -------|------|-------------|
 | `items` | [IEveryAuthIdentity](#ieveryauthidentity)[] | An array of EveryAuth credential objects. |
 | `next` | string \| undefined | If present, indicates that additional results may be obtained by supplying the `next` parameter to another call to `getIdentities` |
+
+#### deleteIdentity(serviceId, identityId)
+
+Deletes an existing identity.
+
+```javascript
+import everyauth from "@fusebit/everyauth-express";
+
+// Delete single identity
+const identity = await everyauth.getIdentity("slack", { userId });
+await everyauth.deleteIdentity("slack", identity.fusebit.identityId);
+```
+
+##### Parameters  <!-- omit in toc -->
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string | The name of the remote service the user should be authenticated with. |
+| `identityId` | string | The identity ID returned as part of `getIdentity` or `getIdentities` call. |
+
+#### deleteIdentities(serviceId, identityId)
+
+Deletes all identities matching the search criteria.
+
+```javascript
+import everyauth from "@fusebit/everyauth-express";
+
+// Delete all identities tagged with tenantId 'contoso'
+const tenantId = "contoso"; 
+await everyauth.deleteIdentities("slack", { tenantId });
+```
+
+##### Parameters  <!-- omit in toc -->
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string | The name of the remote service to delete identities of. |
+| `idsOrTagsOrNull` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null | A set of tags identities to be deleted must have. Specify `null` if you want to delete all identities of the service. |
 
 #### EveryAuthOptions
 
@@ -431,6 +469,14 @@ for (const item of identities.items) {
 | `finishedUrlOrFunc` | string&nbsp;\| (req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;Promise&lt;string&gt; | The absolute or relative path to send the user to after completing the authorization flow, or a function to extract that from the request. |
 | `mapToUserId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string user id to identify the user in your system and later allow querying EveryAuth for credentials owned by that user. |
 | `mapToTenantId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string tenant id to identify the tenant in your system, and allow querying EveryAuth for credentials owned by that tenant. If you don't specify this callback, the value of the tenant id will be set to the same value as the user id. |
+| `onCompleted` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req), ctx:&nbsp;[IEveryAuthAuthorizedContext](#ieveryauthauthorizedcontext))&nbsp;=>&nbsp;void | Called after a user successfully authorized to a target service but before their identity has been persisted. Perform any side-effect operations like removing prior identities that are no longer needed. |
+
+#### IEveryAuthAuthorizedContext
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string |  The name of the remote service the user authorized to. |
+| `tags` | object | A set of tags associated with the established identity. |
 
 #### IEveryAuthCredential
 

@@ -104,8 +104,7 @@ dist
 .tern-port
 
 libc/
-test/mock/profile
-test/mock/profile.json
+test/mock/
 examples/package-lock.json
 
 # Vim

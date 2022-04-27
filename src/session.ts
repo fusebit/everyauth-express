@@ -1,4 +1,6 @@
 import * as superagent from 'superagent';
+import * as express from 'express';
+import { IEveryAuthOptions } from './authorize';
 
 import debugModule from 'debug';
 const debug = debugModule('everyauth:profile');
@@ -31,7 +33,7 @@ const getSessionUrl = (profile: IAuthedProfile) =>
 export const start = async (
   serviceId: string,
   tenantId: string | undefined,
-  userId: string,
+  userId: string | undefined,
   hostedBaseUrl: string
 ): Promise<string> => {
   const profile = await getAuthedProfile();
@@ -41,12 +43,16 @@ export const start = async (
     redirectUrl: `${hostedBaseUrl}${COMMIT_URL_SUFFIX}`,
     tags: {
       [SERVICE_TAG]: serviceId,
-      [USER_TAG]: userId,
-      [TENANT_TAG]: tenantId || userId,
       [VERSION_TAG]: EveryAuthVersion,
     },
     components: [serviceId],
   };
+  if (userId) {
+    payload.tags[USER_TAG] = userId;
+  }
+  if (tenantId) {
+    payload.tags[TENANT_TAG] = tenantId;
+  }
 
   // Is there an existing matching user?
   payload.installId = await getInstallIdByTags({ serviceId, userId, tenantId });
@@ -82,22 +88,42 @@ export const get = async (sessionId: string): Promise<ISession> => {
 };
 
 export const commit = async (
+  req: express.Request,
   serviceId: string,
-  sessionId: string
+  sessionId: string,
+  options: IEveryAuthOptions
 ): Promise<{ identityId: string; tenantId: string; userId: string }> => {
   const profile = await getAuthedProfile();
   const baseUrl = getSessionUrl(profile);
 
   debug(`${sessionId}: committing`);
 
-  // Start the commit process
+  // Invoke callback if provided
+  if (options.onAuthorized) {
+    let result = await superagent
+      .get(`${baseUrl}/session/${sessionId}/`)
+      .set('User-Agent', EveryAuthVersion)
+      .set('Authorization', `Bearer ${profile.accessToken}`);
+    const ctx = {
+      serviceId,
+      tags: result.body.tags,
+    };
+    await options.onAuthorized(req, ctx);
+  }
+
   let result = await superagent
+    .get(`${baseUrl}/session/${sessionId}/`)
+    .set('User-Agent', EveryAuthVersion)
+    .set('Authorization', `Bearer ${profile.accessToken}`);
+
+  // Start the commit process
+  result = await superagent
     .post(`${baseUrl}/session/${sessionId}/commit`)
     .set('User-Agent', EveryAuthVersion)
     .set('Authorization', `Bearer ${profile.accessToken}`)
     .send();
 
-  // Get the session while the commit is going to grab the tenant id; try multiple times in case there's a
+  // Get the session while the commit is going to grab the installId; try multiple times in case there's a
   // race.
   do {
     result = await superagent

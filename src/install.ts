@@ -25,8 +25,8 @@ export const getInstallIdByTags = async (tags: IEveryAuthTagSet): Promise<string
   const installs = await getChildrenByTags<IEveryAuthInstall>(
     {
       [SERVICE_TAG]: tags.serviceId,
-      [USER_TAG]: tags.userId,
-      [TENANT_TAG]: tags.tenantId || tags.userId,
+      ...((tags.userId !== undefined && { [USER_TAG]: tags.userId, [TENANT_TAG]: tags.userId }) || {}),
+      ...((tags.tenantId !== undefined && { [TENANT_TAG]: tags.tenantId }) || {}),
     },
     '/integration/everyauth',
     'install'

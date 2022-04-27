@@ -121,15 +121,7 @@ const runTest = async (
 
 describe('Manual Test Cases', () => {
   beforeAll(async () => {
-    let next: string | undefined = undefined;
-
-    do {
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const identities: any = await everyauth.getIdentities('slack', { userId: 'user-1' }, { next });
-      //eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await Promise.all(identities.items.map((identity: any) => everyauth.deleteIdentity('slack', identity.id)));
-      next = identities.next;
-    } while (next);
+    await everyauth.deleteIdentities('slack', { userId: 'user-1' });
   });
 
   test('Manual: Validate that the express middleware works for Slack', async () => {
@@ -230,5 +222,17 @@ describe('Manual Test Cases', () => {
 
     identities = await everyauth.getIdentities('slack', { tenantId: 'tenant-1', userId: 'user-1' });
     expect(identities.items.length).toBe(1);
+
+    identities = await everyauth.getIdentities('slack', { tenantId: 'tenant-1' });
+    expect(identities.items.length).toBe(1);
+
+    identities = await everyauth.getIdentities('slack', { userId: 'user-1' });
+    expect(identities.items.length).toBe(3);
+  }, 30000);
+
+  test('Manual: Validate that deleteIdentities removes all identities', async () => {
+    await everyauth.deleteIdentities('slack', null);
+    let identities = await everyauth.getIdentities('slack', { userId: 'user-1' });
+    expect(identities.items.length).toBe(0);
   }, 30000);
 });

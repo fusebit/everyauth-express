@@ -62,7 +62,7 @@ import jsforce from 'jsforce';
 
 // Call Salesforce API
 const sfdcClient = new jsforce.Connection({
-  instanceUrl: userCredentials.instance_url,
+  instanceUrl: userCredentials.native.instance_url,
   accessToken: userCredentials.accessToken,
 });
 const contacts = await sfdcClient.query('SELECT name, email FROM Contact');

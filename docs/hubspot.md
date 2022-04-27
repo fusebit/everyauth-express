@@ -58,7 +58,7 @@ Then, instantiate the HubSpot client and make the API calls you want:
 import { Client } from '@hubspot/api-client';
 
 // Call HubSpot API
-const hubspotClient = new Client({ accessToken: credentials.accessToken });
+const hubspotClient = new Client({ accessToken: userCredentials.accessToken });
 
 const contacts = await hubspotClient.crm.contacts.getAll();
 ```
