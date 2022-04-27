@@ -40,6 +40,12 @@ export interface IEveryAuthSearchOptions {
 interface IEveryAuthCredential {
   native: provider.INative /** The raw identity from a service. */;
   accessToken: string /** The OAuth2 accessToken used to authenticate a request. */;
+  fusebit: {
+    accountId: string;
+    subscriptionId: string;
+    serviceId: string;
+    identityId: string /** The unique internal id associated with this credential. */;
+  };
 }
 
 interface IEveryAuthUserTenantSet {
@@ -242,6 +248,14 @@ const getTokenForIdentity = async (serviceId: string, identityId: string): Promi
   }
 
   debug(`${identityId}: Loaded token for ${serviceId}`);
+
+  connectorToken.fusebit = {
+    accountId: profile.account,
+    subscriptionId: profile.subscription,
+    serviceId,
+    identityId,
+  };
+
   return connectorToken;
 };
 
