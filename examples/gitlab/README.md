@@ -225,3 +225,5 @@ node .
 ```
 
 Navigate to `http://localhost:3000`
+
+[Read our blog post about integrating with GitLab](https://fusebit.io/blog/integrate-gitlab-api-everyauth?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth-examples&utm_content=using-gitlab-with-everyauth)
