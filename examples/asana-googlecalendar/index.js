@@ -9,6 +9,7 @@ const mustacheExpress = require("mustache-express");
 
 const app = express();
 const port = 3000;
+const SERVICES = ['asana', 'google'];
 
 app.engine("mustache", mustacheExpress());
 app.set("view engine", "mustache");
@@ -18,65 +19,84 @@ app.use(express.urlencoded());
 app.use(cookieSession({ name: "session", secret: "secret" }));
 
 app.get("/", (req, res) => {
-  if (req.session.asanaUserId && req.session.googleUserId) {
+  let isSessionComplete = true;
+
+  //Can add a message to say, authorize the specific service!
+  SERVICES.forEach((service) => { 
+    if(!req.session[`${service}UserId`]) {
+      isSessionComplete = false;
+    }
+  });
+
+  if (isSessionComplete) {
     return res.redirect(`/tasks`);
   }
   return res.render("index", { userId: uuidv4() });
 });
 
-// Asana Sign In Flow
-app.use(
-  "/asana/authorize/:userId",
-  everyauth.authorize("asana", {
-    finishedUrl: `/tasks`,
-    mapToUserId: (req) => req.params.userId,
-  })
-);
 
-// Google Sign In Flow
-app.use(
-  "/google/authorize/:userId",
-  everyauth.authorize("google", {
-    finishedUrl: `/tasks`,
-    mapToUserId: (req) => req.params.userId,
-  })
-);
+SERVICES.forEach((service) => {
+
+  app.use(
+    `/${service}/authorize/:userId`,
+    everyauth.authorize(service, {
+      finishedUrl: `/tasks`,
+      mapToUserId: (req) => req.params.userId,
+    })
+  );
+
+});
+
+
+// Asana Sign In Flow
+// app.use(
+//   "/asana/authorize/:userId",
+//   everyauth.authorize("asana", {
+//     finishedUrl: `/tasks`,
+//     mapToUserId: (req) => req.params.userId,
+//   })
+// );
+
+// // Google Sign In Flow
+// app.use(
+//   "/google/authorize/:userId",
+//   everyauth.authorize("google", {
+//     finishedUrl: `/tasks`,
+//     mapToUserId: (req) => req.params.userId,
+//   })
+// );
 
 // Get userId from the authorization redirect or via session if already authorized.
 const handleSession = (req, res, next) => {
-  // Set Asana userId in session
-  if (req.query.serviceId === "asana") {
-    req.session.asanaUserId = req.query.userId;
-    return res.redirect("/google/authorize/" + req.session.asanaUserId);
+
+  // 1. Handle authorization callback (set a session)
+
+  if (req.query.userId) {
+    const serviceName = req.query.serviceId;
+    if (!serviceName) {
+      return res.redirect(`/`);
+    }
+    req.session[`${serviceName}UserId`] = req.query.userId;
   }
 
-  // Set Google userId in session
-  if (req.query.serviceId === "google") {
-    req.session.googleUserId = req.query.userId;
-    return res.redirect("/tasks");
-  }
-
-  // If no userId in session, redirect to sign in page
-  if (!req.session.asanaUserId && !req.session.googleUserId) {
-    return res.redirect("/");
-  }
-
-  // If no Google userId in session, redirect to Google sign in page
-  if (!req.session.googleUserId && req.session.asanaUserId) {
-    return res.redirect("/google/authorize/" + req.session.asanaUserId);
-  }
-
-  // If no Asana userId in session, redirect to Google sign in page
-  if (!req.session.asanaUserId && req.session.googleUserId) {
-    return res.redirect("/asana/authorize/" + req.session.googleUserId);
-  }
-
-  console.log("Asana User ID:" + req.session.asanaUserId);
-  console.log("Google User ID:" + req.session.googleUserId);
   return next();
 };
 
-app.get("/tasks", handleSession, async (req, res) => {
+
+const ensureSession = (req, res, next) => {
+
+  SERVICES.forEach((service) => {
+
+    if (!req.session[`${service}UserId`]) {
+      return res.redirect(`/${service}/authorize/${req.query.userId}`);
+    }
+
+  });
+
+  next();
+};
+
+app.get("/tasks", handleSession, ensureSession, async (req, res) => {
   // Retrieve an always fresh access token using userId
   //console.log(req.body);
   const asanaCredentials = await everyauth.getIdentity(
@@ -148,36 +168,36 @@ app.get("/tasks", handleSession, async (req, res) => {
 
   //console.log({ TaskListData: taskDetails, calendarEventsList });
 
-  res.render("tasklist", { TaskListData: {taskDetails, calendarEventsList}});
-  
+  res.render("tasklist", { TaskListData: { taskDetails, calendarEventsList } });
+
 });
 
 
 // Add a new event to a calendar by ID
 app.post('/tasks/calendar/', handleSession, async (req, res) => {
-    // Retrieve access token using userId from session
-    const userCredentials = await everyauth.getIdentity('google', req.session.googleUserId);
-  
-    // Retrieve QuickAddText or use a Default Fallback
-    const quickAddText = req.body.quickadd || 'New Event Added by Fusebit for Tomorrow at Noon';
-    console.log(quickAddText);
-  
-    // Call Google API
-    const myAuth = new google.auth.OAuth2();
-    myAuth.setCredentials({ access_token: userCredentials.accessToken });
-    google.options({ auth: myAuth });
-  
-    // Quick Add a New Event
-    const calendar = google.calendar({ version: 'v3' });
-    const addQuickEvent = await calendar.events.quickAdd({
-      auth: myAuth,
-      calendarId: 'primary',
-      text: quickAddText,
-    });
-  
-    res.redirect(`/tasks`);
+  // Retrieve access token using userId from session
+  const userCredentials = await everyauth.getIdentity('google', req.session.googleUserId);
+
+  // Retrieve QuickAddText or use a Default Fallback
+  const quickAddText = req.body.quickadd || 'New Event Added by Fusebit for Tomorrow at Noon';
+  console.log(quickAddText);
+
+  // Call Google API
+  const myAuth = new google.auth.OAuth2();
+  myAuth.setCredentials({ access_token: userCredentials.accessToken });
+  google.options({ auth: myAuth });
+
+  // Quick Add a New Event
+  const calendar = google.calendar({ version: 'v3' });
+  const addQuickEvent = await calendar.events.quickAdd({
+    auth: myAuth,
+    calendarId: 'primary',
+    text: quickAddText,
   });
-  
+
+  res.redirect(`/tasks`);
+});
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
