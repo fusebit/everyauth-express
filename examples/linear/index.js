@@ -54,6 +54,9 @@ app.use(
 
 app.post('/create-issue', handleSession, async (req, res) => {
   const userCredentials = await everyauth.getIdentity('linear', req.session.userId);
+
+  // You don't need to worry about ensuring you have a valid access token, EveryAuth will handle
+  // that for you by ensuring a fresh access token is always returned.
   const linearClient = new LinearClient({ accessToken: userCredentials?.accessToken });
   const { teamId, title, description } = req.body;
   const me = await linearClient.viewer;
@@ -69,8 +72,15 @@ app.post('/create-issue', handleSession, async (req, res) => {
 app.get('/finished', handleSession, async (req, res) => {
   const userCredentials = await everyauth.getIdentity('linear', req.session.userId);
   const linearClient = new LinearClient({ accessToken: userCredentials?.accessToken });
+
+  // Get the current authorizing linear user.
   const me = await linearClient.viewer;
+
+  // Get the authorizing user teams used to select the team you want to use when
+  // creating a new Linear issue.
   const teams = await me.teams();
+
+  // Get the latest updated 10 'Open' assigned issues
   const myIssues = await me.assignedIssues({
     first: 10,
     orderBy: 'updatedAt',
@@ -87,6 +97,7 @@ app.get('/finished', handleSession, async (req, res) => {
       },
     },
   });
+
   res.render('index', {
     title: `Linear demo for ${me.displayName}`,
     ...me,
