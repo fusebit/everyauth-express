@@ -1,11 +1,12 @@
 const express = require("express");
-const asana = require("asana");
-const { google } = require("googleapis");
-const everyauth = require("@fusebit/everyauth-express");
 const moment = require("moment");
 const { v4: uuidv4 } = require("uuid");
 const cookieSession = require("cookie-session");
 const mustacheExpress = require("mustache-express");
+
+const asana = require("asana");
+const { google } = require("googleapis");
+const everyauth = require("@fusebit/everyauth-express");
 
 const app = express();
 const port = 3000;
@@ -18,23 +19,7 @@ app.use(express.json());
 app.use(express.urlencoded());
 app.use(cookieSession({ name: "session", secret: "secret" }));
 
-app.get("/", (req, res) => {
-  let isSessionComplete = true;
-
-  //Can add a message to say, authorize the specific service!
-  SERVICES.forEach((service) => { 
-    if(!req.session[`${service}UserId`]) {
-      isSessionComplete = false;
-    }
-  });
-
-  if (isSessionComplete) {
-    return res.redirect(`/tasks`);
-  }
-  return res.render("index", { userId: uuidv4() });
-});
-
-
+// Initialize auth route for every service
 SERVICES.forEach((service) => {
 
   app.use(
@@ -47,62 +32,60 @@ SERVICES.forEach((service) => {
 
 });
 
+// Check if all sessions are completed
+const isAllSessionsComplete = (req, res, next) => {
+  let isSessionComplete = true;
 
-// Asana Sign In Flow
-// app.use(
-//   "/asana/authorize/:userId",
-//   everyauth.authorize("asana", {
-//     finishedUrl: `/tasks`,
-//     mapToUserId: (req) => req.params.userId,
-//   })
-// );
+  SERVICES.forEach((service) => {
+    // If any one service is missing, set it to False
+    if (!req.session[`${service}UserId`]) {
+      isSessionComplete = false;
+    }
+  });
+  res.locals.fullyAuthenticated = isSessionComplete;
+  return next();
+}
 
-// // Google Sign In Flow
-// app.use(
-//   "/google/authorize/:userId",
-//   everyauth.authorize("google", {
-//     finishedUrl: `/tasks`,
-//     mapToUserId: (req) => req.params.userId,
-//   })
-// );
+// Set Session UserId for service
+const setSession = (req, res, next) => {
 
-// Get userId from the authorization redirect or via session if already authorized.
-const handleSession = (req, res, next) => {
-
-  // 1. Handle authorization callback (set a session)
-
+  // If it returns a userID, retreive Service Name
   if (req.query.userId) {
+    // Service Name will only be returned after an auth has been completed
     const serviceName = req.query.serviceId;
     if (!serviceName) {
       return res.redirect(`/`);
     }
     req.session[`${serviceName}UserId`] = req.query.userId;
   }
-
   return next();
 };
 
-
+// Check is all sessions are complete
 const ensureSession = (req, res, next) => {
 
   SERVICES.forEach((service) => {
-
+    // For the missing service, redirect to authorization flow for that service
     if (!req.session[`${service}UserId`]) {
       return res.redirect(`/${service}/authorize/${req.query.userId}`);
     }
-
   });
-
-  next();
+  return next();
 };
 
-app.get("/tasks", handleSession, ensureSession, async (req, res) => {
+app.get("/", isAllSessionsComplete, (req, res) => {
+
+  if (res.locals.fullyAuthenticated) {
+    return res.redirect(`/tasks`);
+  }
+  return res.render("index", { userId: uuidv4() });
+});
+
+
+app.get("/tasks", setSession, ensureSession, async (req, res) => {
   // Retrieve an always fresh access token using userId
-  //console.log(req.body);
-  const asanaCredentials = await everyauth.getIdentity(
-    "asana",
-    req.session.asanaUserId
-  );
+  const asanaCredentials = await everyauth.getIdentity("asana", req.session.asanaUserId);
+  const googleCredentials = await everyauth.getIdentity("google", req.session.googleUserId);
 
   // Call Asana API
   const asanaClient = asana.Client.create().useAccessToken(
@@ -128,13 +111,6 @@ app.get("/tasks", handleSession, ensureSession, async (req, res) => {
       taskDueDate: task.due_on,
     });
   }
-  // console.log({ TaskListData: taskDetails });
-
-  // Retrieve an always fresh access token using userId
-  const googleCredentials = await everyauth.getIdentity(
-    "google",
-    req.session.googleUserId
-  );
 
   // Call Google API
   const myAuth = new google.auth.OAuth2();
@@ -166,15 +142,13 @@ app.get("/tasks", handleSession, ensureSession, async (req, res) => {
     };
   });
 
-  //console.log({ TaskListData: taskDetails, calendarEventsList });
-
   res.render("tasklist", { TaskListData: { taskDetails, calendarEventsList } });
 
 });
 
 
 // Add a new event to a calendar by ID
-app.post('/tasks/calendar/', handleSession, async (req, res) => {
+app.post('/tasks/calendar/', setSession, ensureSession, async (req, res) => {
   // Retrieve access token using userId from session
   const userCredentials = await everyauth.getIdentity('google', req.session.googleUserId);
 
