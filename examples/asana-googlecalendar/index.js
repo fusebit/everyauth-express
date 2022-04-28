@@ -178,11 +178,6 @@ app.post('/tasks/calendar/', handleSession, async (req, res) => {
     res.redirect(`/tasks`);
   });
   
-
-app.get("/google", handleSession, async (req, res) => {
-  res.send("In google we trust!");
-});
-
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
