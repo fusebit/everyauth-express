@@ -1,14 +1,15 @@
 const express = require('express');
-const everyauth = require('@fusebit/everyauth-express');
 const { Gitlab } = require('@gitbeaker/node');
 const { v4: uuidv4 } = require('uuid');
 const cookieSession = require('cookie-session');
+
+const everyauth = require('@fusebit/everyauth-express');
 
 const app = express();
 const port = 3000;
 
 // Get userId from the authorization redirect or via session if already authorized.
-const handleSession = (req, res, next) => {
+const validateSession = (req, res, next) => {
   if (req.query.userId) {
     req.session.userId = req.query.userId;
   }
@@ -50,7 +51,7 @@ app.use(
   })
 );
 
-app.get('/finished', handleSession, async (req, res) => {
+app.get('/finished', validateSession, async (req, res) => {
   const userCredentials = await everyauth.getIdentity('gitlab', req.session.userId);
   const gitlabClient = new Gitlab({ oauthToken: userCredentials.accessToken });
   const user = await gitlabClient.Users.current();
