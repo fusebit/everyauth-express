@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "version": "1.0.0",
+  "description": "Use GitLab API with EveryAuth",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Fusebit, Inc.",
+  "license": "ISC",
+  "dependencies": {
+    "@fusebit/everyauth-express": "*",
+    "@gitbeaker/node": "^35.6.0",
+    "cookie-session": "^2.0.0",
+    "express": "^4.17.3",
+    "octokit": "^1.7.1",
+    "pug": "^3.0.2",
+    "uuid": "^8.3.2"
+  }
+}

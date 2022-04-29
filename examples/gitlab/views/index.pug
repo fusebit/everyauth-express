@@ -1,0 +1,82 @@
+html
+  head
+    title=title
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity='sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==' crossorigin='anonymous')
+  body
+    .container
+      .profile
+        .top
+          img.pic(src=avatar_url alt='GitHub Avatar')
+          h2=`${name}(${pronouns})`
+          a(href=web_url) @#{username}
+        unless !followers
+          p.followers
+            i(class='fa-solid fa-users')
+            span #{followers} followers
+            span(class='separator') -
+            span #{following} following
+        unless !job_title
+          section
+            span
+                i(class='fa-solid fa-building')
+            span=`${job_title} at ${organization}`
+        unless !location
+          section
+            span
+                i(class='fa fa-bounce fa-location-dot')
+            span #{location}
+        unless !local_time
+        section
+          span
+              i(class='fa-solid fa-beat fa-clock')
+          span=local_time
+        unless !twitter
+          section
+            span
+                i(class='fa-brands fa-twitter')
+            span 
+              a(href=`https://www.twitter.com/${twitter}` target='_blank') #{twitter}
+        unless !skype
+          section
+            span
+                i(class='fa-brands fa-skype')
+            span=skype
+        unless !linkedin
+          section
+            span
+                i(class='fa-brands fa-linkedin')
+            span 
+              a(href=`https://www.linkedin.com/in/${linkedin}` target='_blank') #{linkedin}
+        p.quote=bio
+      .public-repos
+        h2 Your Starred repositories (#{projects.length})
+        unless !projects.length
+          .more-projects 
+            a(href='https://gitlab.com/explore/projects' target='_blank')
+              i(class='fa-solid fa-bounce fa-star')
+              span= 'Star more projects!'
+        .projects
+          unless projects.length
+            .empty
+              a(href='https://gitlab.com/explore/projects' target='_blank') 0 Starred repositories, explore projects here
+          each val in projects
+            .project-item 
+              .project
+                .project-avatar-container
+                  img.project-avatar(src=val.avatar_url alt=`${val.name}`)
+                .project-name
+                  h2
+                    a(href=val.web_url title=val.description target="_blank")=val.name
+                    span.icon 
+                      i(class='fa-solid fa-globe')
+                  span.counter
+                    i(class='fa-solid fa-star')
+                    span=val.star_count
+                  span.counter
+                    i(class='fa-solid fa-code-fork')
+                    span=val.forks_count
+              p=val.description
+
+
