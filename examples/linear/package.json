@@ -11,7 +11,7 @@
   "author": "Fusebit, Inc.",
   "license": "ISC",
   "dependencies": {
-    "@fusebit/everyauth-express": "^1.0.3",
+    "@fusebit/everyauth-express": "*",
     "@linear/sdk": "^1.22.0",
     "cookie-session": "^2.0.0",
     "express": "^4.17.3",

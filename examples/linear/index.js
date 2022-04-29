@@ -1,8 +1,9 @@
 const express = require('express');
-const everyauth = require('@fusebit/everyauth-express');
 const { LinearClient } = require('@linear/sdk');
 const { v4: uuidv4 } = require('uuid');
 const cookieSession = require('cookie-session');
+
+const everyauth = require('@fusebit/everyauth-express');
 
 const app = express();
 app.use(express.json());
@@ -10,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 const port = 3000;
 
 // Get userId from the authorization redirect or via session if already authorized.
-const handleSession = (req, res, next) => {
+const validateSession = (req, res, next) => {
   if (req.query.userId) {
     req.session.userId = req.query.userId;
   }
@@ -38,12 +39,6 @@ app.get('/', (req, res) => {
 
 app.use(
   '/authorize/:userId',
-  (req, res, next) => {
-    if (!req.params.userId) {
-      return res.redirect('/');
-    }
-    return next();
-  },
   everyauth.authorize('linear', {
     // The endpoint of your app where control will be returned afterwards
     finishedUrl: '/finished',
@@ -52,7 +47,7 @@ app.use(
   })
 );
 
-app.post('/create-issue', handleSession, async (req, res) => {
+app.post('/create-issue', validateSession, async (req, res) => {
   const userCredentials = await everyauth.getIdentity('linear', req.session.userId);
 
   // You don't need to worry about ensuring you have a valid access token, EveryAuth will handle
@@ -69,7 +64,7 @@ app.post('/create-issue', handleSession, async (req, res) => {
   });
 });
 
-app.get('/finished', handleSession, async (req, res) => {
+app.get('/finished', validateSession, async (req, res) => {
   const userCredentials = await everyauth.getIdentity('linear', req.session.userId);
   const linearClient = new LinearClient({ accessToken: userCredentials?.accessToken });
 
