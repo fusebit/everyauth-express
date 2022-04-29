@@ -37,12 +37,6 @@ app.get('/', (req, res) => {
 
 app.use(
   '/authorize/:userId',
-  (req, res, next) => {
-    if (!req.params.userId) {
-      return res.redirect('/');
-    }
-    return next();
-  },
   everyauth.authorize('gitlab', {
     // The endpoint of your app where control will be returned afterwards
     finishedUrl: '/finished',
