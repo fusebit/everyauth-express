@@ -25,4 +25,4 @@ node .
 
 Navigate to `http://localhost:3000`
 
-[Read our blog post about integrating with Linear](https://fusebit.io/blog/integrate-linear-api-everyauth?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth-examples&utm_content=using-linear-with-everyauth)
+[Read our blog post about integrating with Linear](https://fusebit.io/blog/using-linear-with-everyauth?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth-examples&utm_content=using-linear-with-everyauth)
