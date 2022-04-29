@@ -1,0 +1,44 @@
+html
+  head
+    title=title
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==" crossorigin="anonymous")
+  body
+    .container
+      .profile
+        .top
+          img.pic(src=avatarUrl alt='Linear Avatar')
+          h2=name 
+          a(href=url) View profile
+          p=bio
+          span=`Created ${createdIssueCount} issues.`
+          form(action="/create-issue" method="post")
+            fieldset
+              legend(align='left')='Create a new issue'
+              .item
+                label(for='team')='Select a team'
+                select(id='teamId' name='teamId')
+                  each val in teams
+                    option(value=val.id select)=val.name
+              .item 
+                label(for='title')='Title'
+                input(type="text" id='title' name='title')
+              .ite 
+                label(for='description')='Description'
+                textarea(name="description" id='description' cols="30" rows="10")
+            .send-area
+              button.send-button(action='submit')
+                i(class="fa-solid fa-bounce fa-comment")
+                span='Create issue'
+      .issues
+        h2 Your last updated open issues (#{issues.length})
+        ul
+          each val in issues 
+            li.issue
+              span.identifier=val.identifier
+              span.priority=val.priorityLabel
+              a(href=val.url title=val.title target="_blank") #{val.title}
+              p.issue-description=val.description
+
+
