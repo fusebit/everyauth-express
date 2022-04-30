@@ -48,9 +48,11 @@ export const start = async (
     components: [serviceId],
   };
   if (userId) {
+    // eslint-disable-next-line security/detect-object-injection
     payload.tags[USER_TAG] = userId;
   }
   if (tenantId) {
+    // eslint-disable-next-line security/detect-object-injection
     payload.tags[TENANT_TAG] = tenantId;
   }
 

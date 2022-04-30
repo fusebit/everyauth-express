@@ -2,7 +2,7 @@ import * as superagent from 'superagent';
 
 import EveryAuthVersion from './version';
 
-import { SERVICE_TAG, USER_TAG, TENANT_TAG } from './constants';
+import { SERVICE_TAG } from './constants';
 
 import { getAuthedProfile } from './profile';
 
