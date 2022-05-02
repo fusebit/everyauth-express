@@ -35,7 +35,7 @@ Key benefits:
 - Express middleware enabling users of your Node.js app to authorize access to third party APIs.
 - Out of the box, shared OAuth clients with basic permissions to get you started quickly.
 - Full control of the OAuth client configuration when you are ready (bring your own).
-- Durable and secure storage of OAuth credentials of your users.
+- Secure and durable storage of OAuth credentials of your users.
 - Flexible identity mapping to reference credentials using concepts native to your app.
 - Automatic token refresh.
 - Active monitoring and alerting for expired or revoked credentials (coming soon).
@@ -44,14 +44,15 @@ EveryAuth consists of Express middleware, a management CLI, and a [Fusebit](http
 
 ## Contents
 
-[Getting started](#getting-started)  
-[Supported services](#supported-services)  
-[Concepts](#concepts)  
-[Authentication](#authentication)  
-[Identity mapping](#identity-mapping)  
-[Service configuration](#service-configuration)  
-[Reference: CLI](#everyauth-cli-reference)  
-[Reference: middleware](#everyauth-express-middleware-reference)  
+[Getting started](#getting-started)
+[Supported services](#supported-services)
+[Concepts](#concepts)
+[Security](#security)
+[Authentication](#authentication)
+[Identity mapping](#identity-mapping)
+[Service configuration](#service-configuration)
+[Reference: CLI](#everyauth-cli-reference)
+[Reference: middleware](#everyauth-express-middleware-reference)
 [FAQ](#faq)
 
 ## Getting started
@@ -159,6 +160,21 @@ Don't see the service you are looking for? We are constantly adding support for 
 - **Service** - A service is a remote SaaS your users are already using, upon which you would like to act on their behalf. For example, your application may modify a HubSpot record, send a message to Slack, or update a Salesforce company on behalf of your application users.
 - **Identity** - The necessary tokens, refresh tokens, or other secrets that are used to authorize API calls to a _service_ on behalf of a _user_.
 - **Tag** - A key-value pair, for example ("userId", "user-123"). A number of tags can be associated with an _identity_. EveryAuth enables you to lookup an _identity_ or _identities_ associated with a specific set of _tags_.
+
+## Security
+
+EveryAuth is backed by [Fusebit](https://fusebit.io).  Fusebit is a SOC2-compliant integration Provider
+as-a-Service ("iPaaS") that provides a broad and full-featured integration platform.  All data stored in
+Fusebit is:
+  * Encrypted at rest using AES-256 encryption
+  * Encrypted in transit using TLS 1.2
+  * Secured by a powerful authorization engine that powers the Fusebit integration platform itself, trusted
+  and used already in production by Fusebit customers
+  * Identity backed by either private keys or OAuth 2
+
+Fusebit is committed to maintaining a high standard of security practices and welcomes any bug
+reports or security advisories.  Don't hesitate to get in touch with support@fusebit.io for any further
+questions.
 
 ## Authentication
 
