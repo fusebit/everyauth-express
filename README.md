@@ -172,8 +172,9 @@ Fusebit is:
   and used already in production by Fusebit customers
   * Identity backed by either private keys or OAuth 2
 
-Fusebit has a strong committment to maintain a high standard for security practices, and welcomes any bug
-reports or security advisories.  Please contact support@fusebit.io for any further questions.
+Fusebit is committed to maintaining a high standard of security practices and welcomes any bug
+reports or security advisories.  Don't hesitate to get in touch with support@fusebit.io for any further
+questions.
 
 ## Authentication
 
