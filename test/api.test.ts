@@ -12,7 +12,7 @@ test('deleteIdentities throws with empty search criteria', async () => {
 });
 
 test('deleteIdentities throws with undefined search criteria', async () => {
-  await expect(async () => await everyauth.deleteIdentities('slack', undefined as any)).rejects.toThrow(
+  await expect(async () => await everyauth.deleteIdentities('slack', undefined)).rejects.toThrow(
     /The 'idsOrTags' parameter, if not null, must specify at least one identity selection criteria/
   );
 });

@@ -1,5 +1,7 @@
 process.env.EVERYAUTH_VERSION_PREFIX = 'test-';
 
+import express = require('express');
+
 import * as path from 'path';
 import * as everyauth from '../src';
 import { getHostedBaseUrl } from '../src/authorize';
@@ -25,7 +27,7 @@ test('Starting a session with an originalUrl with query params returns a valid s
     'slack',
     undefined,
     'user-1',
-    getHostedBaseUrl({ finishedUrl: '/finished' }, { originalUrl: 'http://localhost:3000?foo=bar' } as any)
+    getHostedBaseUrl({ finishedUrl: '/finished' }, { originalUrl: 'http://localhost:3000?foo=bar' } as express.Request)
   );
   expect(startUrl).toMatch(
     // eslint-disable-next-line security/detect-non-literal-regexp

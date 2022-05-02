@@ -110,16 +110,23 @@ export const loadProfile = async (profileName?: string): Promise<IProfile> => {
     return (cachedFoundProfile = await loadProfileFromDisk(process.env.EVERYAUTH_PROFILE_PATH, profileName));
   }
 
-  // Recursively look upwards for a `.fusebit` directory
+  // Recursively look upwards for a `.fusebit` directory until the top-most directory is reached.
   let settingsDir = '.';
-  while (settingsDir != '/') {
+
+  while (true) {
     try {
       cachedFoundProfile = await loadProfileFromDisk(path.join(settingsDir, '.fusebit'), profileName);
       return cachedFoundProfile;
     } catch (_) {
       // Ignore filesystem errors and try again
     }
-    settingsDir = path.resolve(path.join(settingsDir, '..'));
+
+    // Make sure the parent directory is a different directory.
+    const parentDir = path.resolve(path.join(settingsDir, '..'));
+    if (parentDir === settingsDir) {
+      break;
+    }
+    settingsDir = parentDir;
   }
 
   throw new Error(`No ${settingsName} found in this tree.`);
