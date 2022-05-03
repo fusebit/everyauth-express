@@ -1,0 +1,113 @@
+<html>
+  <head>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+  </head>
+
+  <body>
+    <div class="container mt-5">
+      <div class="row">
+
+<!-- Task List! -->
+   <div
+     class="container vh-60 d-flex justify-content-center align-top col-lg-6"
+   >
+     <div class="card text-center" style="width: 30rem">
+       <!--Card Header -->
+       <div class="card-header bg-primary text-white">
+         <h5 class="card-title">Your Asana Tasks</h5>
+       </div>
+ 
+       <div class="card card-body bg-light h-5" style="height: 100%">
+         <!-- Event List -->
+         <div class="row">
+           <div class="alert alert-primary align-center">Click on a Task to add it to your Calendar!</div> 
+            <div class="col-8 text-start">
+              <h6 class="card-subtitle m-2 p-2">Task</h6>
+            </div>
+            <div class="col-4 text-end">
+              <h6 class="card-subtitle m-2 p-2">Due Date</h6>
+            </div>
+            
+          </div>
+          
+         <ul
+         class="list-group overflow-scroll"
+         style="height: 100%; max-height: 40rem"
+       >
+       <form
+  method="POST"
+  action="/tasks/calendar/"
+>
+       {{#TaskListData.taskDetails}}
+       <button type="submit" class="list-group-item list-group-item-action" name="quickadd" value="{{ taskName }} on {{taskDueDate}}">
+           <div class="row">
+             <div class="col-8 text-start">
+               {{ taskName }}
+             </div>
+             <div class="col-4 text-end">
+               <span class="badge bg-primary rounded-pill">{{
+                  taskDueDate
+                }}</span>
+             </div>
+           </div>
+         </button>
+         {{/TaskListData.taskDetails}}
+       </ul>
+         
+       </div>
+     </div>
+   </div>
+
+<!-- Your Events Box -->
+
+<div
+  class="container vh-60 d-flex justify-content-center align-top col-lg-6"
+>
+  <div class="card text-center" style="width: 30rem">
+    <!--Card Header -->
+    <div class="card-header bg-primary text-white">
+      <h5 class="card-title">Your Google Calendar Events</h5>
+    </div>
+
+    <div class="card card-body bg-light h-5" style="height: 100%">
+      <!-- Event List -->
+      <div class="row">
+        <div class="col-8 text-start">
+          <h6 class="card-subtitle m-2 p-2">Title</h6>
+        </div>
+        <div class="col-4 text-end">
+          <h6 class="card-subtitle m-2 p-2">Start Time</h6>
+        </div>
+      </div>
+      <ul
+        class="list-group overflow-scroll"
+        style="height: 100%; max-height: 40rem"
+      >
+        {{#TaskListData.calendarEventsList}}
+        <li class="list-group-item">
+          <div class="row">
+            <div class="col-8 text-start">
+              {{ summary }}
+            </div>
+            <div class="col-4 text-end">
+              <span class="badge bg-primary rounded-pill">{{ startTime }}</span>
+            </div>
+          </div>
+        </li>
+        {{/TaskListData.calendarEventsList}}
+      </ul>
+    </div>
+  </div>
+</div>
+         
+      </div>
+    </div>
+  </body>
+</html>
+
+
