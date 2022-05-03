@@ -2,37 +2,55 @@
  <head>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
   </head>
-  <body>
-    <div class="vh-60 d-flex justify-content-center align-items-center">
+  <body>      
+  
+  <div class="container vh-60 d-flex justify-content-center align-items-center m-5 p-5">
 
-      <div class="card text-center" style="width: 40rem;">
-        <div class="card-header bg-primary text-white"> <h5 class="card-title">List of Events</h5> </div> 
+      <div class="card text-center">
+        <!--Card Header -->
+          <div class="card-header bg-primary text-white"> <h5 class="card-title">Your Events</h5> </div> 
 
-  <div class="card card-body bg-light h-5" style="height:100%;">
 
-  <form method="POST" action="/google/calendar/events/{{#EventListData.myCalendarId}}{{.}}{{/EventListData.myCalendarId}}">
-    <div class="container">
-      <div class="row">
-        <div class="col-8">
-          <input type="text" class="form-control" id="quickadd" name="quickadd"  placeholder="Add a Quick Event using Plain Text"></div>
-        <div class="col-4">
-          <button type="submit" class="btn btn-primary mb-2">Add</button> </div>
-      </div>
+        <div class="card card-body bg-light h-5" style="height:100%;">
+
+        <!-- Quick Add Box --> 
+        <h6 class="card-subtitle mb-2 text-muted text-start">Quick Add Event</h6>
+        <form method="POST" action="/google/calendar/events/{{#EventListData.myCalendarId}}{{.}}{{/EventListData.myCalendarId}}">
+            <div class="row">
+                    <div class="col-8 justify-content-between">
+                      <input type="text" class="form-control" id="quickadd" name="quickadd"  placeholder="e.g. Lunch Tomorrow at Noon">
+                    </div>
+                    <div class="col-4 text-start">
+                      <button type="submit" class="btn btn-primary mb-2">Add</button>
+                    </div>
+             </div>
+        </form>
+
+        <!-- Event List -->
+        <h6 class="card-subtitle mb-2 text-muted text-start">Your Upcoming Events</h6>
+           <div class="row">
+                      <div class="col-8 text-start">
+                         <h6 class="card-subtitle m-2 p-2">Title</h6>
+                      </div>
+                      <div class="col-4 text-end">
+                         <h6 class="card-subtitle m-2 p-2">Start Time</h6>
+                      </div>
+               </div>
+           <ul class="list-group overflow-scroll" style="height:100%; max-height: 40rem;">
+            {{#EventListData.calendarEventsList}}
+            <li class="list-group-item">
+              <div class="row">
+                      <div class="col-8 text-start">
+                         {{summary}}
+                      </div>
+                      <div class="col-4 text-end">
+                         <span class="badge bg-primary rounded-pill">{{startTime}}</span>
+                      </div>
+               </div>
+            </li>
+            {{/EventListData.calendarEventsList}}
+          </ul> 
+          
     </div>
-  </form>
-  </div>
-     <div class="card card-body bg-light h-25" >
-      <ul class="list-group overflow-scroll" style="height:100%; max-height: 40rem;">
-         {{#EventListData.calendarEventsList}}
-          <li class="list-group-item list-group-item-action justify-content-between">{{summary}}  
-            <span class="badge bg-primary rounded-pill">{{#startTime}}{{startTime.dateTime}}{{/startTime}}</span>
-          <br>
-         </li>
-        {{/EventListData.calendarEventsList}}
-    </ul> 
-  </div>
-
-  </div>
-
 </body>
 </html>
