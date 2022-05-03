@@ -1,16 +1,19 @@
 const express = require('express');
-const everyauth = require('@fusebit/everyauth-express');
 const { v4: uuidv4 } = require('uuid');
 const cookieSession = require('cookie-session');
+
 const { WebClient } = require('@slack/web-api');
+
+const everyauth = require('@fusebit/everyauth-express');
 
 const app = express();
 const port = 3000;
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Get userId from the authorization redirect or via session if already authorized.
-const handleSession = (req, res, next) => {
+const validateSession = (req, res, next) => {
   if (req.query.userId) {
     req.session.userId = req.query.userId;
   }
@@ -52,7 +55,7 @@ app.use(
   })
 );
 
-app.get('/finished', handleSession, async (req, res) => {
+app.get('/finished', validateSession, async (req, res) => {
   const userCredentials = await everyauth.getIdentity('slack', req.session.userId);
   // Call Slack API
   const slackClient = new WebClient(userCredentials.accessToken);
@@ -60,7 +63,7 @@ app.get('/finished', handleSession, async (req, res) => {
   res.render('index', { title: 'user profile', user: userResponse.user });
 });
 
-app.post('/message', handleSession, async (req, res) => {
+app.post('/message', validateSession, async (req, res) => {
   const userCredentials = await everyauth.getIdentity('slack', req.session.userId);
   // Call Slack API
   const slackClient = new WebClient(userCredentials.accessToken);
