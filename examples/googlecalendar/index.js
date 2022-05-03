@@ -100,18 +100,14 @@ app.get('/google/calendar/events/:calendarId', handleSession, async (req, res) =
   });
 
   const calendarEventsList = calendarEvents.data.items.map((calendarItem) => {
-
-
     // Google Calendar API Returns Inconsistent Start Times
     // So this is a workaround to handle the data and normalize it
     let startTimeFromNow = '';
     if (!calendarItem.start) {
       startTimeFromNow = '';
-    } 
-    else if (calendarItem.start.dateTime) {
+    } else if (calendarItem.start.dateTime) {
       startTimeFromNow = moment(calendarItem.start.dateTime).fromNow();
-    }
-    else if (calendarItem.start.date) {
+    } else if (calendarItem.start.date) {
       startTimeFromNow = moment(calendarItem.start.date).fromNow();
     }
     return {
@@ -120,7 +116,6 @@ app.get('/google/calendar/events/:calendarId', handleSession, async (req, res) =
       startTime: startTimeFromNow,
     };
   });
-
 
   res.render('eventlist', {
     EventListData: { calendarEventsList, myCalendarId },
