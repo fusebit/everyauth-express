@@ -1,0 +1,153 @@
+/* Global */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+}
+
+body,
+a {
+  color: #fff;
+}
+
+h1 span {
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 24px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  box-shadow: -1px 2px 10px 2px #9e9e9e63;
+}
+
+/* Gitlab profile section */
+.profile {
+  padding: 10px;
+  width: 40%;
+  box-shadow: 2px 2px 7px 0px #313334;
+  background-color: #548;
+  text-align: center;
+  position: fixed;
+  height: 100%;
+}
+
+.profile .pic {
+  height: 90px;
+  width: 90px;
+  border-radius: 50%;
+  margin: auto auto 10px auto;
+  display: block;
+  border: solid 5px #30363c;
+}
+
+.quote {
+  margin: 10px;
+  text-align: center;
+  font-style: italic;
+}
+
+/* Public starred repository listing section */
+.public-repos {
+  background-color: #30363ced;
+  width: 60%;
+  margin-left: 41%;
+  min-height: 100vh;
+}
+
+.top {
+  margin-top: 20%;
+}
+
+.public-repos h2 {
+  text-align: center;
+  margin: 10px;
+}
+
+section svg,
+.followers svg {
+  padding: 2px;
+}
+
+.followers {
+  margin: 10px;
+}
+
+.top h2 {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.projects {
+  padding: 10px;
+}
+
+.project {
+  display: flex;
+  flex-direction: row;
+}
+
+.projects p {
+  margin-top: 10px;
+}
+
+.project-avatar-container {
+  margin-right: 10px;
+}
+
+.counter {
+  padding: 10px;
+  border: solid 1px #706b82;
+  display: inline-block;
+  background-color: #2e293f;
+}
+
+.counter svg {
+  padding-right: 5px;
+}
+
+.project-item {
+  margin: 5px;
+  background-color: #30363c;
+  padding: 5px;
+  border-radius: 0 0 10px 10px;
+}
+
+.project p {
+  font-size: 12px;
+}
+
+.project-avatar {
+  border-radius: 0;
+  border: 0;
+  height: 50px;
+  margin-top: 50%;
+  align-self: center;
+}
+
+.empty {
+  margin: 0 auto;
+  width: 400px;
+  padding: 10px;
+  text-align: center;
+}
+
+.more-projects {
+  margin: 10px;
+  padding: 10px;
+  text-align: center;
+}
+
+.more-projects svg {
+  padding-right: 5px;
+}
+
+.fa-star {
+  color: #e9c947;
+}

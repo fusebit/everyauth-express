@@ -35,7 +35,7 @@ Key benefits:
 - Express middleware enabling users of your Node.js app to authorize access to third party APIs.
 - Out of the box, shared OAuth clients with basic permissions to get you started quickly.
 - Full control of the OAuth client configuration when you are ready (bring your own).
-- Durable and secure storage of OAuth credentials of your users.
+- Secure and durable storage of OAuth credentials of your users.
 - Flexible identity mapping to reference credentials using concepts native to your app.
 - Automatic token refresh.
 - Active monitoring and alerting for expired or revoked credentials (coming soon).
@@ -44,14 +44,15 @@ EveryAuth consists of Express middleware, a management CLI, and a [Fusebit](http
 
 ## Contents
 
-[Getting started](#getting-started)  
-[Supported services](#supported-services)  
-[Concepts](#concepts)  
-[Authentication](#authentication)  
-[Identity mapping](#identity-mapping)  
-[Service configuration](#service-configuration)  
-[Reference: CLI](#everyauth-cli-reference)  
-[Reference: middleware](#everyauth-express-middleware-reference)  
+[Getting started](#getting-started)
+[Supported services](#supported-services)
+[Concepts](#concepts)
+[Security](#security)
+[Authentication](#authentication)
+[Identity mapping](#identity-mapping)
+[Service configuration](#service-configuration)
+[Reference: CLI](#everyauth-cli-reference)
+[Reference: middleware](#everyauth-express-middleware-reference)
 [FAQ](#faq)
 
 ## Getting started
@@ -135,20 +136,20 @@ Congratulations, you are done! To test the end-to-end flow, navigate your browse
 
 EveryAuth supports authorization to the following APIs out of the box:
 
-[Asana](docs/asana.md)  
-[Atlassian](docs/atlassian.md)  
-[Discord](docs/discord.md)  
-[GitHub](docs/githuboauth.md)  
-[GitLab](docs/gitlab.md)  
-[Google API](docs/google.md)  
-[Hubspot](docs/hubspot.md)  
-[Linear](docs/linear.md)  
-[PagerDuty](docs/pagerduty.md)  
-[QuickBooks](docs/quickbooks-online.md)  
-[Reddit](docs/reddit.md)  
-[Salesforce](docs/sfdc.md)  
-[Slack](docs/slack.md)  
-[StackOverflow](docs/stackoverflow.md)  
+Asana: [Docs](docs/asana.md) • [Example](https://fusebit.io/blog/everyauth-scalable-asana-gcal/)  
+Atlassian: [Docs](docs/atlassian.md)  
+Discord: [Docs](docs/discord.md)  
+GitHub: [Docs](docs/githuboauth.md) • [Example](https://fusebit.io/blog/integrate-github-api-everyauth/)  
+GitLab: [Docs](docs/gitlab.md) • [Example](https://fusebit.io/blog/integrate-gitlab-api-everyauth/)  
+Google API: [Docs](docs/google.md) • [Example](https://fusebit.io/blog/integrate-google-calendar-node-everyauth/)  
+Hubspot: [Docs](docs/hubspot.md) • [Example](https://fusebit.io/blog/everyauth-hubspot/)  
+Linear: [Docs](docs/linear.md) • [Example](https://fusebit.io/blog/using-linear-with-everyauth/)  
+PagerDuty: [Docs](docs/pagerduty.md)  
+QuickBooks: [Docs](docs/quickbooks-online.md)  
+Reddit: [Docs](docs/reddit.md)  
+Salesforce: [Docs](docs/sfdc.md) • [Example](https://fusebit.io/blog/everyauth-salesforce/)  
+Slack: [Docs](docs/slack.md) • [Example](https://fusebit.io/blog/everyauth-slack-messages/)  
+StackOverflow: [Docs](docs/stackoverflow.md)  
 
 Don't see the service you are looking for? We are constantly adding support for new services. [Check if yours is in the backlog or file a request for one](https://github.com/fusebit/everyauth-express/issues).
 
@@ -160,6 +161,21 @@ Don't see the service you are looking for? We are constantly adding support for 
 - **Identity** - The necessary tokens, refresh tokens, or other secrets that are used to authorize API calls to a _service_ on behalf of a _user_.
 - **Tag** - A key-value pair, for example ("userId", "user-123"). A number of tags can be associated with an _identity_. EveryAuth enables you to lookup an _identity_ or _identities_ associated with a specific set of _tags_.
 
+## Security
+
+EveryAuth is backed by [Fusebit](https://fusebit.io).  Fusebit is a SOC2-compliant integration Provider
+as-a-Service ("iPaaS") that provides a broad and full-featured integration platform.  All data stored in
+Fusebit is:
+  * Encrypted at rest using AES-256 encryption
+  * Encrypted in transit using TLS 1.2
+  * Secured by a powerful authorization engine that powers the Fusebit integration platform itself, trusted
+  and used already in production by Fusebit customers
+  * Identity backed by either private keys or OAuth 2
+
+Fusebit is committed to maintaining a high standard of security practices and welcomes any bug
+reports or security advisories.  Don't hesitate to get in touch with support@fusebit.io for any further
+questions.
+
 ## Authentication
 
 EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job and need to authorize those calls. The credentials are established when you run `everyauth init` and stored in the `.fusebit/settings.json` file on disk.
@@ -167,7 +183,7 @@ EveryAuth CLI and middleware communicate with the Fusebit APIs to do their job a
 The express middleware locates credentials in the following way, in priority order:
 
 1. Programmatically through code via the `everyauth.config()` method.
-2. Use a base64-encoded JWT generated via `everyauth token | base64` in the `EVERYAUTH_TOKEN` environment variable.
+2. Use a token generated via `everyauth token` in the `EVERYAUTH_TOKEN` environment variable.
 3. Use a base64-encoded profile generated via `everyauth profile export | base64` in the `EVERYAUTH_PROFILE_JSON` environment variable 
 4. The `EVERYAUTH_PROFILE_PATH` environment variable points to the `settings.json` file in a directory.
 5. The `settings.json` file in the `.fusebit` subdirectory of the current or closest parent directory.
@@ -264,8 +280,8 @@ Supports importing, from `stdin` or a file, a previously existing profile.
 
 #### everyauth token
 
-Generates a JSON-encoded JWT that, once base64-encoded, can be placed within the `EVERYAUTH_TOKEN` environment variable to
-be automatically used by the middleware to communicate with the EveryAuth backend.
+Generates a token that can be placed within the `EVERYAUTH_TOKEN` environment variable to be automatically
+used by the middleware to communicate with the EveryAuth backend.
 
 Supports a `--expires` parameter that allows for a custom expiration time specified via standard
 [ms](https://www.npmjs.com/package/ms) interval encoding.  The default expiration interval is `2h` (two hours).
@@ -273,7 +289,7 @@ Supports a `--expires` parameter that allows for a custom expiration time specif
 **Example:** Generate a token valid for 12 weeks, and store it in a `.env` file.
 
 ```
-echo EVERYAUTH_TOKEN=`everyauth token --expires 12w | base64` >> .env
+echo EVERYAUTH_TOKEN=`everyauth token --expires 12w` >> .env
 ```
 
 #### everyauth service ls
@@ -359,7 +375,7 @@ The `finishedUrl` may receive the following query string parameters on completio
 
 | name | type | description |
 |------|------|-------------|
-| `serviceId` | string | The name of the remote service to get authorization from the user. |
+| `serviceIdOrFunc` | string&nbsp;\| (req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;Promise&lt;string&gt; | The name of the remote service to get authorization from the user, or a function to extract that from the request. |
 | `options` | [EveryAuthOptions](#everyauthoptions) | Options controlling the behavior of the middleware. |
 
 #### getIdentity(serviceId, identityOrIdsOrTags)
@@ -413,8 +429,8 @@ for (const item of identities.items) {
 | name | type | description |
 |------|------|-------------|
 | `serviceId` | string | The name of the remote service the user should be authenicated with. |
-| `tags` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null| A set of tags returned identities must have. |
-| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` to get a next page of matching identities. Specify the `pageSize` property to indicate the desired maximum number of results to return. |
+| `idsOrTags` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null| A set of tags returned identities must have. |
+| `options` | object (optional) | Specify the `next` property as returned by a previous call to `getIdentities` to get a next page of matching identities. Specify the `count` property to indicate the desired maximum number of results to return. |
 
 ##### Return  <!-- omit in toc -->
 
@@ -423,13 +439,60 @@ for (const item of identities.items) {
 | `items` | [IEveryAuthIdentity](#ieveryauthidentity)[] | An array of EveryAuth credential objects. |
 | `next` | string \| undefined | If present, indicates that additional results may be obtained by supplying the `next` parameter to another call to `getIdentities` |
 
+#### deleteIdentity(serviceId, identityId)
+
+Deletes an existing identity.
+
+```javascript
+import everyauth from "@fusebit/everyauth-express";
+
+// Delete single identity
+const identity = await everyauth.getIdentity("slack", { userId });
+await everyauth.deleteIdentity("slack", identity.fusebit.identityId);
+```
+
+##### Parameters  <!-- omit in toc -->
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string | The name of the remote service the user should be authenticated with. |
+| `identityId` | string | The identity ID returned as part of `getIdentity` or `getIdentities` call. |
+
+#### deleteIdentities(serviceId, identityId)
+
+Deletes all identities matching the search criteria.
+
+```javascript
+import everyauth from "@fusebit/everyauth-express";
+
+// Delete all identities tagged with tenantId 'contoso'
+const tenantId = "contoso"; 
+await everyauth.deleteIdentities("slack", { tenantId });
+```
+
+##### Parameters  <!-- omit in toc -->
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string | The name of the remote service to delete identities of. |
+| `idsOrTagsOrNull` | Record&lt;string,<br/>&nbsp;&nbsp;string&nbsp;\|<br/>&nbsp;&nbsp;number&nbsp;\|<br/>&nbsp;&nbsp;undefined&nbsp;\|<br/>&nbsp;&nbsp;null | A set of tags identities to be deleted must have. Specify `null` if you want to delete all identities of the service. |
+
 #### EveryAuthOptions
 
 | name | type | description |
 |------|------|-------------|
 | `finishedUrl` | string | The absolute or relative path to send the user to after completing the authorization flow. |
+| `finishedUrlOrFunc` | string&nbsp;\| (req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;Promise&lt;string&gt; | The absolute or relative path to send the user to after completing the authorization flow, or a function to extract that from the request. |
 | `mapToUserId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string user id to identify the user in your system and later allow querying EveryAuth for credentials owned by that user. |
 | `mapToTenantId` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req))&nbsp;=>&nbsp;string | This method is called to generate a string tenant id to identify the tenant in your system, and allow querying EveryAuth for credentials owned by that tenant. If you don't specify this callback, the value of the tenant id will be set to the same value as the user id. |
+| `onCompleted` | async&nbsp;(req:&nbsp;[Express.request](https://expressjs.com/en/api.html#req), ctx:&nbsp;[IEveryAuthAuthorizedContext](#ieveryauthauthorizedcontext))&nbsp;=>&nbsp;void | Called after a user successfully authorized to a target service but before their identity has been persisted. Perform any side-effect operations like removing prior identities that are no longer needed. |
+
+#### IEveryAuthAuthorizedContext
+
+| name | type | description |
+|------|------|-------------|
+| `serviceId` | string |  The name of the remote service the user authorized to. |
+| `tags` | object | A set of tags associated with the established identity. |
 
 #### IEveryAuthCredential
 
@@ -437,6 +500,7 @@ for (const item of identities.items) {
 |------|------|-------------|
 | `accessToken` | string | An access token to call the service APIs. The token is guaranteed to be valid. |
 | `native` | object | A representation of the security credential native to the service that generated it. See the [Supported services](#supported-services) section for details of a specific service. |
+| `fusebit` | object | A collection of values, including the `identityId`, that uniquely identify this credential. |
 
 #### IEveryAuthIdentity
 

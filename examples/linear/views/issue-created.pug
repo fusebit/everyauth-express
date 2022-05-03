@@ -1,0 +1,24 @@
+html
+  head
+    title='Issue created'
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==" crossorigin="anonymous")
+  body
+    .success.centered
+     p
+        i.fa-solid.fa-check
+        span='The issue has been created'
+    .issue-created-container
+        h1=title
+        p=description
+        p
+            i.fa-solid.fa-code-fork
+            span=branchName
+        .footer
+            a.button(href='/')
+                i.fa-solid.fa-arrow-left-long.fa-bounce
+                span='Go back'
+            a.button(href=url target='_blank')
+                i.fa-solid.fa-arrow-right-from-bracket.fa-bounce
+                span='See created issue'

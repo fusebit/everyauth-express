@@ -1,5 +1,5 @@
 const express = require('express');
-const { Octokit } = require('octokit');
+const { Gitlab } = require('@gitbeaker/node');
 const { v4: uuidv4 } = require('uuid');
 const cookieSession = require('cookie-session');
 
@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 
 app.use(
   '/authorize/:userId',
-  everyauth.authorize('githuboauth', {
+  everyauth.authorize('gitlab', {
     // The endpoint of your app where control will be returned afterwards
     finishedUrl: '/finished',
     // The user ID of the authenticated user the credentials will be associated with
@@ -46,15 +46,16 @@ app.use(
 );
 
 app.get('/finished', validateSession, async (req, res) => {
-  const userCredentials = await everyauth.getIdentity('githuboauth', req.session.userId);
-  const client = new Octokit({ auth: userCredentials?.accessToken });
-  const { data } = await client.rest.users.getAuthenticated();
-  const { data: repos } = await client.request('GET /user/repos', {});
+  const userCredentials = await everyauth.getIdentity('gitlab', req.session.userId);
+  const gitlabClient = new Gitlab({ oauthToken: userCredentials.accessToken });
+  const user = await gitlabClient.Users.current();
+
+  // Get the last top 10 user starred repositories from GitLab.
+  const projects = await gitlabClient.Projects.all({ maxPages: 1, perPage: 10, starred: true });
   res.render('index', {
-    title: `GitHub Profile for ${data.login}`,
-    ...data,
-    used_storage: Math.round((data.disk_usage * 100) / data.plan.space, 2),
-    public_repos: repos,
+    title: `GitLab Profile for ${user.username}`,
+    ...user,
+    projects,
   });
 });
 

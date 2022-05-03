@@ -1,0 +1,228 @@
+/* Global */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+  background-color: rgb(94, 106, 210);
+}
+
+body,
+a {
+  color: #fff;
+}
+
+h1 span {
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 24px;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  box-shadow: -1px 2px 10px 2px #9e9e9e63;
+}
+
+/* GitHub profile section */
+.profile {
+  padding: 10px;
+  width: 40%;
+  box-shadow: 2px 2px 7px 0px #313334;
+  background-color: #323da2;
+  text-align: center;
+  position: fixed;
+  height: 100%;
+}
+
+.profile .pic {
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  margin: auto auto 10px auto;
+  display: block;
+  box-shadow: 0 0 0 1px rgba(240, 246, 252, 0.1);
+}
+
+/* Public repository listing section */
+.issues {
+  background-color: #30363ced;
+  width: 60%;
+  margin-left: 41%;
+  min-height: 100vh;
+}
+
+.issues ul {
+  list-style: none;
+  margin-left: 10px;
+  padding: 0;
+}
+
+.issues ul li {
+  border-bottom: solid 1px #9e9e9e;
+  display: block;
+  padding: 5px;
+}
+
+.issues h2 {
+  text-align: center;
+  margin: 10px;
+}
+
+.issues ul li span {
+  font-size: 10px;
+  margin: 2px;
+}
+
+.lang {
+  border: solid 1px;
+  border-radius: 10px;
+  text-align: center;
+  width: 100px;
+  padding: 2px;
+  margin-top: 5px;
+  background-color: #f4433624;
+}
+
+section svg,
+.followers svg {
+  padding: 2px;
+}
+
+.followers {
+  margin: 10px;
+}
+
+.top h2 {
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+.identifier {
+  background-color: #323da2;
+  width: 60px;
+  text-align: center;
+  padding: 5px;
+  border-radius: 50px;
+}
+
+.priority {
+  background-color: #4b4e50;
+  width: 60px;
+  text-align: center;
+  padding: 5px;
+  border-radius: 50px;
+}
+
+.issue-description {
+  font-size: 11px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding: 10px;
+  white-space: nowrap;
+}
+
+.success {
+  background-color: #237d23;
+  padding: 10px;
+}
+
+.form-container {
+  border-top: solid 1px #707a85;
+  background-color: gray;
+  border-radius: 0 0 10px 10px;
+  padding-top: 10px;
+  margin-top: 20px;
+  min-height: 100px;
+}
+
+textarea,
+input,
+select {
+  width: 100%;
+  padding: 10px;
+  margin: 2px;
+}
+.send-button,
+.button {
+  background-color: #373737;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  margin: 5px;
+  border-radius: 50px;
+  box-shadow: 2px 3px 7px 0px #564d4d;
+  cursor: pointer;
+}
+
+.button {
+  display: block;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
+.send-button svg,
+.button svg,
+.success svg {
+  padding-right: 5px;
+}
+
+select {
+  text-align: center;
+  border: solid 2px #237d23;
+}
+
+fieldset {
+  padding: 5px;
+  border: none;
+}
+
+form {
+  background-color: rgb(94 106 210);
+  margin-top: 10px;
+  width: 500px;
+  margin: 20px auto;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 5px 4px 10px 2px #30363c;
+}
+
+.issue-created-container {
+  background-color: #fff;
+  color: #30363c;
+  padding: 10px;
+  width: 400px;
+  margin: 20px auto;
+  border-radius: 10px;
+  box-shadow: 3px 3px 8px 3px #30363c;
+}
+
+.issue-created-container .button {
+  width: 200px;
+  text-align: center;
+}
+
+.issue-created-container h1 {
+  text-transform: capitalize;
+}
+
+.issue-created-container p {
+  font-size: 12px;
+  padding: 10px;
+}
+
+.issue-created-container svg {
+  padding-right: 5px;
+}
+
+.footer {
+  display: flex;
+}
+
+.centered {
+  text-align: center;
+}

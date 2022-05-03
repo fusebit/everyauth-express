@@ -33,13 +33,19 @@ interface IEveryAuthIdentitySearch {
 /** Options that control the pagination of getIdentities requests. */
 export interface IEveryAuthSearchOptions {
   next?: string;
-  pageSize?: number;
+  count?: number;
 }
 
 /** A specific credential associated with an identityId, normalized to provide a standard interface. */
 interface IEveryAuthCredential {
   native: provider.INative /** The raw identity from a service. */;
   accessToken: string /** The OAuth2 accessToken used to authenticate a request. */;
+  fusebit: {
+    accountId: string;
+    subscriptionId: string;
+    serviceId: string;
+    identityId: string /** The unique internal id associated with this credential. */;
+  };
 }
 
 interface IEveryAuthUserTenantSet {
@@ -77,8 +83,8 @@ export const getIdentity = async (
       });
     } else if (identityOrIdsOrTags.userId || identityOrIdsOrTags.tenantId) {
       identities = await getIdentitiesByTags(serviceId, {
-        [USER_TAG]: identityOrIdsOrTags.userId,
-        [TENANT_TAG]: identityOrIdsOrTags.tenantId || identityOrIdsOrTags.userId,
+        ...((identityOrIdsOrTags.userId && { [USER_TAG]: identityOrIdsOrTags.userId }) || {}),
+        ...((identityOrIdsOrTags.tenantId && { [TENANT_TAG]: identityOrIdsOrTags.tenantId }) || {}),
       });
     } else {
       identities = await getIdentitiesByTags(serviceId, identityOrIdsOrTags as IEveryAuthTagSet);
@@ -128,7 +134,6 @@ export const getIdentities = async (
     identities = await getIdentitiesByTags(
       serviceId,
       {
-        [SERVICE_TAG]: serviceId,
         ...('userId' in idsOrTags ? { [USER_TAG]: idsOrTags.userId } : {}),
         ...('tenantId' in idsOrTags ? { [TENANT_TAG]: idsOrTags.tenantId } : {}),
       },
@@ -149,6 +154,31 @@ export const getIdentities = async (
     })),
     next: identities.next,
   };
+};
+
+/**
+ * Deletes all matching identities.
+ *
+ * @param serviceId The service to search for matching identities within.
+ * @param idsOrTags Either a { userId, tenantId } that can be used to search for a matching identity, or a set of
+ * tags that will be used to search. Pass 'null' to delete all identities for a service.
+ */
+export const deleteIdentities = async (
+  serviceId: string,
+  idsOrTags: IEveryAuthUserTenantSet | IEveryAuthTagSet | null
+): Promise<void> => {
+  if (idsOrTags === undefined || (idsOrTags && Object.keys(idsOrTags).length === 0)) {
+    throw new Error(
+      "The 'idsOrTags' parameter, if not null, must specify at least one identity selection criteria to prevent accidentally deleting all identitites. " +
+        "If you really want to delete all identities, specify 'null' for 'idsOrTags'."
+    );
+  }
+  let options: IEveryAuthSearchOptions = { count: 10 };
+  do {
+    const identities: IEveryAuthIdentitySearch = await getIdentities(serviceId, idsOrTags || {}, options);
+    await Promise.all(identities.items.map((identity) => deleteIdentity(serviceId, identity.id)));
+    options = { next: identities.next, count: 10 };
+  } while (options.next);
 };
 
 /**
@@ -218,6 +248,14 @@ const getTokenForIdentity = async (serviceId: string, identityId: string): Promi
   }
 
   debug(`${identityId}: Loaded token for ${serviceId}`);
+
+  connectorToken.fusebit = {
+    accountId: profile.account,
+    subscriptionId: profile.subscription,
+    serviceId,
+    identityId,
+  };
+
   return connectorToken;
 };
 

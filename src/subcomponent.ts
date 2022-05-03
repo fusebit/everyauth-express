@@ -2,7 +2,7 @@ import * as superagent from 'superagent';
 
 import EveryAuthVersion from './version';
 
-import { SERVICE_TAG, USER_TAG, TENANT_TAG } from './constants';
+import { SERVICE_TAG } from './constants';
 
 import { getAuthedProfile } from './profile';
 
@@ -20,11 +20,6 @@ export const getChildrenByTags = async <ISearchResultType>(
   // eslint-disable-next-line security/detect-object-injection
   if (!tags[SERVICE_TAG]) {
     throw new Error(`Missing tag ${SERVICE_TAG}`);
-  }
-
-  // eslint-disable-next-line security/detect-object-injection
-  if (!tags[USER_TAG]) {
-    throw new Error(`Missting tag ${USER_TAG}`);
   }
 
   // Convert the IEveryAuthTagSet into the right query parameters
@@ -48,8 +43,8 @@ export const getChildrenByTags = async <ISearchResultType>(
       params.set('next', options.next);
     }
 
-    if (options.pageSize) {
-      params.set('pageSize', `${options.pageSize}`);
+    if (options.count) {
+      params.set('count', `${options.count}`);
     }
   }
 

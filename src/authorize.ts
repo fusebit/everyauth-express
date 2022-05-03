@@ -1,13 +1,17 @@
 import * as express from 'express';
 
 import { USER_TAG, TENANT_TAG } from './constants';
+import { IEveryAuthTagSet } from './identity';
 
 import * as session from './session';
 
 import debugModule from 'debug';
 const debug = debugModule('everyauth:authorize');
-const dbg = ({ serviceId, userId, tenantId }: { serviceId: string; userId: string; tenantId: string }, msg: string) => {
-  debug(`${serviceId}[${tenantId || ''}${tenantId ? '/' : ''}${userId}]: ${msg}`);
+const dbg = (
+  { serviceId, userId, tenantId }: { serviceId: string; userId?: string; tenantId?: string },
+  msg: string
+) => {
+  debug(`${serviceId}[${tenantId || ''}${tenantId ? '/' : ''}${userId || 'NA'}]: ${msg}`);
 };
 
 export interface IEveryAuthContext {
@@ -23,6 +27,11 @@ export interface IEveryAuthContext {
   userId: string /** The userId supplied by the mapToUserId function for this request. */;
 }
 
+export interface IEveryAuthAuthorizedContext {
+  serviceId: string;
+  tags: IEveryAuthTagSet;
+}
+
 export interface IEveryAuthOptions {
   /**
    * The URL that the user should be sent to after the operation is complete. Can be either
@@ -30,7 +39,7 @@ export interface IEveryAuthOptions {
    *
    * Supplied with an `error` query parameter if the operation resulted in an error.
    */
-  finishedUrl: string;
+  finishedUrl: string | ((req: express.Request) => Promise<string>);
 
   /**
    * Either a string or a function which generates a string that contains the protocol, hostname, port, and
@@ -40,7 +49,7 @@ export interface IEveryAuthOptions {
   hostedBaseUrl?: string | ((req: express.Request) => string);
 
   /**
-   * Map the current request to a unique tenantId that can be used to retrieve the authorized token on
+   * Map the current request to a tenantId that can be used to retrieve the authorized token on
    * subsequent requests.  Usually extracts the value from the output of the authorization system, or can be a
    * constant for experimentation and testing purposes.
    *
@@ -52,11 +61,19 @@ export interface IEveryAuthOptions {
   mapToTenantId?: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
 
   /**
-   * Map the current request to a unique userId tag that can be used to retrieve the authorized token on
+   * Map the current request to a userId tag that can be used to retrieve the authorized token on
    * subsequent requests.  Usually extracts the value from the output of the authorization system, or can be a
    * constant for experimentation and testing purposes.
    */
-  mapToUserId: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
+  mapToUserId?: ((req: express.Request) => Promise<string>) | ((req: express.Request) => string);
+
+  /**
+   * Called after a user successfully authorized to a target service but before their identity has been persisted.
+   * Perform any side-effect operations like removing prior identities that are no longer needed.
+   */
+  onAuthorized?:
+    | ((req: express.Request, ctx: IEveryAuthAuthorizedContext) => Promise<void>)
+    | ((req: express.Request, ctx: IEveryAuthAuthorizedContext) => void);
 }
 
 /**
@@ -75,10 +92,14 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
   }
 
   // Discovery time!
-  //
+
+  // Normalize original URL by removing query
+  const i = req.originalUrl.indexOf('?');
+  const originalUrl = i < 0 ? req.originalUrl : req.originalUrl.substring(0, i);
+
   // Sometimes the originalUrl includes the entire request, sometimes it doesn't!
-  if (req.originalUrl.startsWith('http')) {
-    return req.originalUrl;
+  if (originalUrl.startsWith('http')) {
+    return originalUrl;
   }
 
   // req.hostname doesn't preserve the port, unfortunately, so test the Host header to see if it's present.
@@ -88,7 +109,7 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
   }
 
   // Return a hopefully valid URL.
-  return `${req.protocol}://${req.hostname}${port}${req.originalUrl}`;
+  return `${req.protocol}://${req.hostname}${port}${originalUrl}`;
 };
 
 /**
@@ -98,20 +119,23 @@ export const getHostedBaseUrl = (options: IEveryAuthOptions, req: express.Reques
  * @param options Configuration options to control the behavior of this authorization.
  * @return An Express Router
  */
-export const authorize = (serviceId: string, options: IEveryAuthOptions): express.Router => {
+export const authorize = (
+  serviceIdOrFunc: string | ((req: express.Request) => Promise<string>),
+  options: IEveryAuthOptions
+): express.Router => {
   const router = express.Router({ mergeParams: true });
 
-  const redirect = (
+  const redirect = async (
     req: express.Request,
     res: express.Response,
-    ids: { userId: string; tenantId: string; serviceId: string }
+    ids: { serviceId: string; userId: string; tenantId: string }
   ) => {
     // Parse the finishedUrl, supporting both a plain path and a full url.
     let finUrl: URL | undefined = undefined;
     let fullUrl = false;
 
     try {
-      finUrl = new URL(options.finishedUrl);
+      finUrl = new URL(options.finishedUrl instanceof Function ? await options.finishedUrl(req) : options.finishedUrl);
       fullUrl = true;
     } catch (_) {
       // Not a fully qualified url, probably just a path.
@@ -120,7 +144,7 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
       finUrl = new URL(`http://localhost${options.finishedUrl}`);
     }
 
-    finUrl.searchParams.append('serviceId', serviceId);
+    finUrl.searchParams.append('serviceId', ids.serviceId);
     finUrl.searchParams.append('userId', ids.userId);
     finUrl.searchParams.append('tenantId', ids.tenantId);
 
@@ -132,9 +156,10 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
   };
 
   router.get('/', async (req: express.Request, res: express.Response) => {
-    const userId = await options.mapToUserId(req);
+    const userId = options.mapToUserId ? await options.mapToUserId(req) : undefined;
     const tenantId = options.mapToTenantId ? await options.mapToTenantId(req) : userId;
     const hostedBaseUrl = getHostedBaseUrl(options, req);
+    const serviceId = serviceIdOrFunc instanceof Function ? await serviceIdOrFunc(req) : serviceIdOrFunc;
 
     dbg({ serviceId, userId, tenantId }, `Authorizing on ${hostedBaseUrl}`);
 
@@ -144,6 +169,7 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
   });
 
   router.get('/commit', async (req: express.Request, res: express.Response) => {
+    const serviceId = serviceIdOrFunc instanceof Function ? await serviceIdOrFunc(req) : serviceIdOrFunc;
     const sessionId = req.query.session as string;
 
     // Check for error
@@ -159,18 +185,18 @@ export const authorize = (serviceId: string, options: IEveryAuthOptions): expres
       };
 
       dbg(ids, `Error ${req.query.error}`);
-      return redirect(req, res, ids);
+      return await redirect(req, res, ids);
     }
 
     // Update the session object if it's changed
-    const { identityId, tenantId, userId } = await session.commit(serviceId, sessionId);
+    const { identityId, tenantId, userId } = await session.commit(req, serviceId, sessionId, options);
 
     dbg({ serviceId, userId, tenantId }, `Success ${identityId}`);
 
     dbg({ serviceId, userId, tenantId }, `Redirect to ${options.finishedUrl}`);
 
     // Propagate to redirect
-    redirect(req, res, { serviceId, userId, tenantId });
+    await redirect(req, res, { serviceId, userId, tenantId });
   });
 
   return router;

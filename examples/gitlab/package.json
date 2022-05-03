@@ -1,8 +1,7 @@
 {
-  "name": "everyauth-github-oauth",
   "private": true,
   "version": "1.0.0",
-  "description": "Use GitHub API with EveryAuth",
+  "description": "Use GitLab API with EveryAuth",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -12,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@fusebit/everyauth-express": "*",
+    "@gitbeaker/node": "^35.6.0",
     "cookie-session": "^2.0.0",
     "express": "^4.17.3",
     "octokit": "^1.7.1",
