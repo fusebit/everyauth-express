@@ -1,0 +1,31 @@
+html
+  head
+    title=title
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==" crossorigin="anonymous")
+  body
+    .profile
+      .pic-container
+        img.pic(src=user.profile.image_1024 alt='Slack Avatar')
+      span.hi-icon
+        i(class="fa-solid fa-shake fa-hand-peace")
+      h2=user.real_name
+      p=user.profile.title
+      p.send-me='You can send me a message from here, I will get it directly in my Slack!'
+      .form-container
+        unless !messageSent
+          p.success
+            i(class="fa-solid fa-bounce fa-wand-magic-sparkles")
+            span='Thanks!, I got your message:'
+          unless !message
+            p.message-text
+              span=message
+          a.button(href='/') Go back
+        unless messageSent
+          form(action="/message" method="post")
+            textarea(name="message", cols="30", rows="10")
+            .send-area
+              button.send-button(action='submit')
+                i(class="fa-solid fa-bounce fa-comment")
+                span='Send me a message'
