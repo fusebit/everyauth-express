@@ -154,7 +154,6 @@ app.post('/tasks/calendar/', setSession, ensureSession, async (req, res) => {
 
   // Retrieve QuickAddText or use a Default Fallback
   const quickAddText = req.body.quickadd || 'New Event Added by Fusebit for Tomorrow at Noon';
-  console.log(quickAddText);
 
   // Call Google API
   const myAuth = new google.auth.OAuth2();
