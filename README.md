@@ -136,20 +136,20 @@ Congratulations, you are done! To test the end-to-end flow, navigate your browse
 
 EveryAuth supports authorization to the following APIs out of the box:
 
-[Asana](docs/asana.md)  
-[Atlassian](docs/atlassian.md)  
-[Discord](docs/discord.md)  
-[GitHub](docs/githuboauth.md)  
-[GitLab](docs/gitlab.md)  
-[Google API](docs/google.md)  
-[Hubspot](docs/hubspot.md)  
-[Linear](docs/linear.md)  
-[PagerDuty](docs/pagerduty.md)  
-[QuickBooks](docs/quickbooks-online.md)  
-[Reddit](docs/reddit.md)  
-[Salesforce](docs/sfdc.md)  
-[Slack](docs/slack.md)  
-[StackOverflow](docs/stackoverflow.md)  
+Asana: [Docs](docs/asana.md) • [Example](https://fusebit.io/blog/everyauth-scalable-asana-gcal/)  
+Atlassian: [Docs](docs/atlassian.md)  
+Discord: [Docs](docs/discord.md)  
+GitHub: [Docs](docs/githuboauth.md) • [Example](https://fusebit.io/blog/integrate-github-api-everyauth/)  
+GitLab: [Docs](docs/gitlab.md) • [Example](https://fusebit.io/blog/integrate-gitlab-api-everyauth/)  
+Google API: [Docs](docs/google.md) • [Example](https://fusebit.io/blog/integrate-google-calendar-node-everyauth/)  
+Hubspot: [Docs](docs/hubspot.md) • [Example](https://fusebit.io/blog/everyauth-hubspot/)  
+Linear: [Docs](docs/linear.md) • [Example](https://fusebit.io/blog/using-linear-with-everyauth/)  
+PagerDuty: [Docs](docs/pagerduty.md)  
+QuickBooks: [Docs](docs/quickbooks-online.md)  
+Reddit: [Docs](docs/reddit.md)  
+Salesforce: [Docs](docs/sfdc.md) • [Example](https://fusebit.io/blog/everyauth-salesforce/)  
+Slack: [Docs](docs/slack.md) • [Example](https://fusebit.io/blog/everyauth-slack-messages/)  
+StackOverflow: [Docs](docs/stackoverflow.md)  
 
 Don't see the service you are looking for? We are constantly adding support for new services. [Check if yours is in the backlog or file a request for one](https://github.com/fusebit/everyauth-express/issues).
 
