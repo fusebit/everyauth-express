@@ -1,0 +1,26 @@
+doctype html
+
+html
+  head
+    title title
+    script(src="https://cdn.tailwindcss.com")
+  body
+    .container
+      .profile
+        h2 Welcome #{name}
+            img.pic(src=avatar_url alt='PD Avatar')
+            h2 Your services (#{svcs.length})
+              table(class="table-auto")
+                thead
+                  tr
+                    th(scope="col") #
+                    th(scope="col") Name
+                    th(scope="col") Status
+                    each svc, index in svcs
+                      tbody
+                        tr
+                        th(scope="row") #{index + 1}
+                          td 
+                            a(href=svc.self) #{svc.name} 
+                            td #{svc.status}
+                                
