@@ -8,6 +8,8 @@
     "removeComments": false,
     "strict": true,
     "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true
   }
