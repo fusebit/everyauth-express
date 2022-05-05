@@ -3,7 +3,9 @@
   "version": "2.1.3",
   "description": "EveryAuth is the easiest way for your app to access APIs like Slack, Salesforce, or Github.",
   "main": "libc/index.js",
-  "files": ["libc/**/*"],
+  "files": [
+    "libc/**/*"
+  ],
   "scripts": {
     "build": "tsc -b",
     "test": "jest --testPathIgnorePatterns test/manual",
