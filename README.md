@@ -1,3 +1,5 @@
+[![CICD](https://github.com/fusebit/everyauth-express/actions/workflows/main_publish_prod.yml/badge.svg)](https://github.com/fusebit/everyauth-express/actions/workflows/main_publish_prod.yml)
+[![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 # EveryAuth
 
 EveryAuth is the easiest way for your app to access APIs like Slack, Salesforce, or Github.
@@ -537,3 +539,11 @@ You need a [Fusebit](https://fusebit.io) account for three reasons:
 #### What if you don't support the service I need?
 
 Please [check if it is already on the roadmap and file an issue if it is not](https://github.com/fusebit/everyauth-express/issues).
+
+### Community
+
+<a href ="https://join.slack.com/t/fusebitio/shared_invite/zt-qe7uidtf-4cs6OgaomFVgAF_fQZubfg"><img src="https://img.shields.io/badge/Slack-join-blue"/></a>
+
+<a href = "https://discord.gg/SN4rhhCH"><img src="https://img.shields.io/badge/Discord-join-blue" /></a>
+  
+<a href = "https://twitter.com/fusebitio"><img src="https://img.shields.io/badge/Twitter-follow%20us-blue" /></a>
