@@ -33,4 +33,4 @@ Run the application
 npm run dev
 ```
 
-[Read our blog post about integrating with Linear](https://fusebit.io/blog/using-stackoverflow-with-everyauth?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth-examples&utm_content=using-stackoverflow-with-everyauth)
+[Read our blog post about integrating with StackOverflow](https://fusebit.io/blog/using-stackoverflow-with-everyauth?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth-examples&utm_content=using-stackoverflow-with-everyauth)

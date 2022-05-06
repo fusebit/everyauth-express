@@ -45,6 +45,9 @@ app.use(
   })
 );
 
+/**
+ * StackOverflow REST API wrapper used to perform authorized GET requests.  
+ */
 const stackOverflowApi = ({ access_token, client_key }) => {
   return async (path, extraParams = {}) => {
     const url = new URL(`https://api.stackexchange.com/2.3/${path}`);
@@ -52,31 +55,46 @@ const stackOverflowApi = ({ access_token, client_key }) => {
     url.searchParams.append('access_token', access_token);
     url.searchParams.append('site', 'stackoverflow');
     Object.keys(extraParams).forEach((key) => url.searchParams.append(key, extraParams[key]));
-    return await superagent.get(url.toString());
+    const response = await superagent.get(url.toString());
+    return JSON.parse(response.text);
   };
 };
 
+/**
+ * Display Top 10 StackOverflow Questions and Answers of all time for the authorizing user
+ */
 app.get('/finished', validateSession, async (req, res) => {
+  // Get StackOverflow service credentials.
   const userCredentials = await everyauth.getIdentity('stackoverflow', req.session.userId);
   const { client_key, access_token } = userCredentials.native;
+
+  // Configure a StackOverflow API request with the authorizing access token and client key.
+  // These values are provided in the token response from the StackOverflow API.
   const stackOverflowRequest = stackOverflowApi({ access_token, client_key });
-  const meResponse = await stackOverflowRequest('me');
-  const userInfo = JSON.parse(meResponse.text);
+
+  // Get the current authorizing user profile information
+  const userInfo = await stackOverflowRequest('me');
   const user = userInfo.items[0];
-  const currentUserAnswers = await stackOverflowRequest(`users/${user.user_id}/answers`, {
+
+  // Get top 10 user answers, it uses a custom filter to get the answer body.
+  // This custom filter was created at https://api.stackexchange.com/docs/answers
+  const answers = await stackOverflowRequest(`users/${user.user_id}/answers`, {
     pagesize: 10,
     order: 'desc',
     sort: 'votes',
     filter: '!*MZqiH2sG_JWt3xD',
   });
-  const answers = JSON.parse(currentUserAnswers.text);
-  const currentUserQuestions = await stackOverflowRequest(`users/${user.user_id}/questions`, {
+
+
+  // Get top 10 user questions, it uses a custom filter to get the question body.
+  // Read more about this API at https://api.stackexchange.com/docs/questions
+  const questions = await stackOverflowRequest(`users/${user.user_id}/questions`, {
     pagesize: 10,
     order: 'desc',
     sort: 'votes',
   });
-  // Fetch top questions and top answers.
-  const questions = JSON.parse(currentUserQuestions.text);
+
+
   res.render('index', {
     user,
     questions: questions.items,
@@ -84,30 +102,42 @@ app.get('/finished', validateSession, async (req, res) => {
     page: '/stack-overflow-top',
     pageTitle: 'View Top Global data',
   });
+
 });
 
+/**
+ * Display Top 10 StackOverflow Questions and Answers of all time.
+ */
 app.get('/stack-overflow-top', validateSession, async (req, res) => {
+    // Get StackOverflow service credentials.
   const userCredentials = await everyauth.getIdentity('stackoverflow', req.session.userId);
   const { client_key, access_token } = userCredentials.native;
+
+  // Configure a StackOverflow API request with the authorizing access token and client key.
+  // These values are provided in the token response from the StackOverflow API.
   const stackOverflowRequest = stackOverflowApi({ access_token, client_key });
-  const meResponse = await stackOverflowRequest('me');
-  const userInfo = JSON.parse(meResponse.text);
+
+  // Get the current authorizing user profile information
+  const userInfo = await stackOverflowRequest('me');
   const user = userInfo.items[0];
-  const topQuestionsResponse = await stackOverflowRequest('questions', {
+
+  // Get global top 10 questions from StackOverflow. It uses a custom filter to get the question body.
+  // This custom filter was created at https://api.stackexchange.com/docs/questions
+  const questions = await stackOverflowRequest('questions', {
     pagesize: 10,
     order: 'desc',
     sort: 'votes',
     filter: '!nKzQUR3Ecy',
   });
-  const questions = JSON.parse(topQuestionsResponse.text);
-  console.log(questions);
-  const topAnswersResponse = await stackOverflowRequest('answers', {
+
+  // Get top 10 user answers, it uses a custom filter to get the answer body.
+  // This custom filter was created at https://api.stackexchange.com/docs/answers
+  const answers = await stackOverflowRequest('answers', {
     pagesize: 10,
     order: 'desc',
     sort: 'votes',
     filter: '!*MZqiH2sG_JWt3xD',
   });
-  const answers = JSON.parse(topAnswersResponse.text);
 
   res.render('index', {
     user,
@@ -119,5 +149,5 @@ app.get('/stack-overflow-top', validateSession, async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
+  console.log(`Example app listening on http://localhost:${port}`);
 });
