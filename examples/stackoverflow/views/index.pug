@@ -63,6 +63,10 @@ html
               .answer-body!=question.body
       .top-answers
         h1=`Top 10 Answers`
+        unless answers.length
+          .empty 
+            i(class='fa-solid fa-face-frown fa-bounce')
+            span='No answers found'
         each answer in answers
             .question-item 
               h2!=answer.title
