@@ -40,7 +40,7 @@ Key benefits:
 - Automatic token refresh.
 - Active monitoring and alerting for expired or revoked credentials (coming soon).
 
-EveryAuth consists of Express middleware, a management CLI, and a [Fusebit](https://fusebit.io) service. If you need additional context of the key benefits, check out our [EveryAuth announcement](https://fusebit.io/blog/everyauth/) or ask us a question on [Twitter @fusebitio](https://twitter.com/fusebitio).
+EveryAuth consists of Express middleware, a management CLI, and a [Fusebit](https://fusebit.io/?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth&utm_content=readme) service. If you need additional context of the key benefits, check out our [EveryAuth announcement](https://fusebit.io/blog/everyauth/) or ask us a question on [Twitter @fusebitio](https://twitter.com/fusebitio).
 
 ## Contents
 
@@ -65,7 +65,7 @@ First, install the EveryAuth CLI:
 npm install -g @fusebit/everyauth-cli
 ```
 
-Then, create a free [Fusebit](https://fusebit.io) account to use the shared Slack OAuth client. In the root directory of your Express application, run:
+Then, create a free [Fusebit](https://manage.fusebit.io/signup?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth&utm_content=readme) account to use the shared Slack OAuth client. In the root directory of your Express application, run:
 
 ```bash
 everyauth init
@@ -163,7 +163,7 @@ Don't see the service you are looking for? We are constantly adding support for 
 
 ## Security
 
-EveryAuth is backed by [Fusebit](https://fusebit.io).  Fusebit is a SOC2-compliant integration Provider
+EveryAuth is backed by [Fusebit](https://fusebit.io/?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth&utm_content=readme).  Fusebit is a SOC2-compliant integration Provider
 as-a-Service ("iPaaS") that provides a broad and full-featured integration platform.  All data stored in
 Fusebit is:
   * Encrypted at rest using AES-256 encryption
@@ -524,7 +524,7 @@ In addition to abstracting away the OAuth implementation quirks of various APIs,
 
 #### Why do I need a Fusebit account?
 
-You need a [Fusebit](https://fusebit.io) account for three reasons:
+You need a [Fusebit](https://manage.fusebit.io/signup?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth&utm_content=readme) account for three reasons:
 
 1. To ensure your users' identities are stored securely and isolated from identities of other apps' users.
 1. To ensure your OAuth client configuration is protected.
@@ -532,7 +532,7 @@ You need a [Fusebit](https://fusebit.io) account for three reasons:
 
 #### What is Fusebit anyway?
 
-[Fusebit](https://fusebit.io) is a code-first integration platform that helps developers add integrations to their apps. Authorization to third-party services and management of your users' credentials is a fundamental feature of the platform, which we are making available to developers through EveryAuth. Follow us on Twitter [@fusebitio](https://twitter.com/fusebitio) for great developer content, and check out some cool OSS projects at [github.com/fusebit](https://github.com/fusebit).
+[Fusebit](https://fusebit.io/?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth&utm_content=readme) is a code-first integration platform that helps developers add integrations to their apps. Authorization to third-party services and management of your users' credentials is a fundamental feature of the platform, which we are making available to developers through EveryAuth. Follow us on Twitter [@fusebitio](https://twitter.com/fusebitio) for great developer content, and check out some cool OSS projects at [github.com/fusebit](https://github.com/fusebit).
 
 #### What if you don't support the service I need?
 
