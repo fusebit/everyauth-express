@@ -65,7 +65,7 @@ First, install the EveryAuth CLI:
 npm install -g @fusebit/everyauth-cli
 ```
 
-Then, create a free [Fusebit](https://manage.fusebit.io/signup?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth&utm_content=readme) account to use the shared Slack OAuth client. In the root directory of your Express application, run:
+Then, create a free Fusebit account to use the shared Slack OAuth client. In the root directory of your Express application, run:
 
 ```bash
 everyauth init
@@ -524,7 +524,7 @@ In addition to abstracting away the OAuth implementation quirks of various APIs,
 
 #### Why do I need a Fusebit account?
 
-You need a [Fusebit](https://manage.fusebit.io/signup?utm_source=github.com&utm_medium=referral&utm_campaign=everyauth&utm_content=readme) account for three reasons:
+You need a Fusebit account for three reasons:
 
 1. To ensure your users' identities are stored securely and isolated from identities of other apps' users.
 1. To ensure your OAuth client configuration is protected.
