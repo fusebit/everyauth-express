@@ -545,7 +545,7 @@ Please [check if it is already on the roadmap and file an issue if it is not](ht
   <a href="https://join.slack.com/t/fusebitio/shared_invite/zt-qe7uidtf-4cs6OgaomFVgAF_fQZubfg">
     <img src="https://img.shields.io/badge/Slack-Chat%20with%20us-green" alt="chat on Slack">
   </a>
-  <a href="https://discord.gg/SN4rhhCH">
+  <a href="https://discord.gg/qjGwuZDera">
     <img src="https://img.shields.io/discord/835208560006660167?logo=discord" alt="chat on Discord">
   </a>
   <a href="https://twitter.com/intent/follow?screen_name=fusebitio">
