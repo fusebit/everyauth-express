@@ -46,7 +46,7 @@ app.use(
 );
 
 /**
- * StackOverflow REST API wrapper used to perform authorized GET requests.  
+ * StackOverflow REST API wrapper used to perform authorized GET requests.
  */
 const stackOverflowApi = ({ access_token, client_key }) => {
   return async (path, extraParams = {}) => {
@@ -85,7 +85,6 @@ app.get('/finished', validateSession, async (req, res) => {
     filter: '!*MZqiH2sG_JWt3xD',
   });
 
-
   // Get top 10 user questions, it uses a custom filter to get the question body.
   // Read more about this API at https://api.stackexchange.com/docs/questions
   const questions = await stackOverflowRequest(`users/${user.user_id}/questions`, {
@@ -94,7 +93,6 @@ app.get('/finished', validateSession, async (req, res) => {
     sort: 'votes',
   });
 
-
   res.render('index', {
     user,
     questions: questions.items,
@@ -102,14 +100,13 @@ app.get('/finished', validateSession, async (req, res) => {
     page: '/stack-overflow-top',
     pageTitle: 'View Top Global data',
   });
-
 });
 
 /**
  * Display Top 10 StackOverflow Questions and Answers of all time.
  */
 app.get('/stack-overflow-top', validateSession, async (req, res) => {
-    // Get StackOverflow service credentials.
+  // Get StackOverflow service credentials.
   const userCredentials = await everyauth.getIdentity('stackoverflow', req.session.userId);
   const { client_key, access_token } = userCredentials.native;
 
