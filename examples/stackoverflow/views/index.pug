@@ -1,0 +1,87 @@
+html
+  head
+    title='StackOverflow Top Questions and Answers'
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity='sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==' crossorigin='anonymous')
+  body
+    .header
+      .logo
+        img.logo(src='https://stackoverflow.design/assets/img/logos/so/logo-stackoverflow.svg')
+      .profile
+        img.pic(src=user.profile_image alt='StackOverflow profile image')
+        section
+          a(href=user.link)=user.display_name
+        section
+          span #{user.reputation}
+          unless !user.badge_counts.bronze
+            span.shield.bronze
+                i(class='fa-solid fa-shield')
+            span #{user.badge_counts.bronze}
+          unless !user.badge_counts.silver
+            span.shield.silver
+                i(class='fa-solid fa-shield')
+            span #{user.badge_counts.silver}
+          unless !user.badge_counts.gold
+            span.shield.gold
+                i(class='fa-solid fa-shield')
+            span #{user.badge_counts.gold}
+          span
+              i(class='fa fa-location-dot fa-bounce')
+          span #{user.location}
+        .action 
+          a(href=page)=pageTitle
+    .container
+      .top-questions
+        h1=`Top 10 Questions`
+        unless questions.length
+          .empty 
+            i(class='fa-solid fa-face-frown fa-bounce')
+            span='No questions found'
+        each question in questions
+            .question-item 
+              h2!=question.title
+              .stats 
+                section
+                  span
+                      i(class='fa-solid fa-eye')
+                  span=question.view_count
+                section
+                  span
+                      i(class='fa-solid fa-star')
+                  span=question.score
+                section
+                  span
+                      i(class='fa-solid fa-link')
+                  a(href=question.link target='_blank')='View question'
+              .author
+                img(src=question.owner.profile_image)
+                span=`Question by ${question.owner.display_name}`
+              .tags
+                each tag in question.tags 
+                  div.tag=tag
+              .answer-body!=question.body
+      .top-answers
+        h1=`Top 10 Answers`
+        unless answers.length
+          .empty 
+            i(class='fa-solid fa-face-frown fa-bounce')
+            span='No answers found'
+        each answer in answers
+            .question-item 
+              h2!=answer.title
+              .stats 
+                section
+                  span
+                      i(class='fa-solid fa-star')
+                  span=answer.score
+                section
+                  span
+                      i(class='fa-solid fa-link')
+                  a(href=answer.link target='_blank')='View Question'
+              .author
+                img(src=answer.owner.profile_image)
+                span=`Answer by ${answer.owner.display_name}`
+              .answer-body!=answer.body
+              
+
