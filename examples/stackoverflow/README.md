@@ -27,8 +27,6 @@ Navigate to `http://localhost:3000`
 
 If you're in development mode run
 
-Run the application
-
 ```bash
 npm run dev
 ```
