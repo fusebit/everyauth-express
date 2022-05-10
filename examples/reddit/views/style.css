@@ -1,0 +1,182 @@
+/* Global */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+}
+
+.header {
+  background-color: #e3ecf6;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1;
+  box-shadow: #343637 -3px -3px 13px 8px;
+  background-position: 50%;
+  background-size: cover;
+  border-radius: 4px 4px 0 0;
+}
+
+.logo {
+  height: 40px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
+.profile {
+  width: 200px;
+  position: absolute;
+  left: 50%;
+  top: 10px;
+}
+
+.profile section,
+.profile a {
+  padding: 2px;
+  color: #2d2d2d;
+}
+
+.profile svg {
+  padding-right: 3px;
+  padding-left: 3px;
+}
+
+.karma {
+  position: absolute;
+  top: 7px;
+  right: 40px;
+  background-color: #fe4400;
+  color: #ffff;
+  padding: 5px;
+  text-align: center;
+  width: 20px;
+  border-radius: 50px;
+}
+
+.user {
+  text-align: center;
+  border-radius: 10px;
+  padding: 5px;
+  position: absolute;
+  background-color: #fff;
+  bottom: -25px;
+  left: 25px;
+  width: 200px;
+  box-shadow: #636161 4px 8px 8px 1px;
+  margin: auto;
+}
+
+.avatar {
+  height: 160px;
+  width: 125px;
+}
+
+.banner {
+  background-position: 50%;
+  background-size: cover;
+  border-radius: 4px 4px 0 0;
+  height: 100%;
+  width: 100%;
+}
+
+.profile_card {
+  height: 200px;
+  position: relative;
+}
+
+.comment-title {
+  display: flex;
+  flex-direction: row;
+}
+
+.container {
+  display: flex;
+  flex-direction: row;
+  margin-top: 311px;
+}
+
+.position {
+  background-color: #fd4400;
+  color: #fff;
+  text-align: center;
+  padding: 5px;
+  width: 15px;
+  height: 15px;
+  margin-right: 5px;
+  border-radius: 50px;
+}
+
+.comment-item {
+  background-color: #efeeee;
+  padding: 15px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.comment-item a {
+  color: hsl(206, 100%, 40%);
+  padding: 10px;
+}
+
+.comment-item .author img {
+  height: 40px;
+  border-radius: 50px;
+  padding: 5px;
+}
+
+.comment-item h1 {
+  font-size: 12px;
+}
+
+.author {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: nowrap;
+  width: 145px;
+}
+
+.stats {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  align-content: center;
+}
+
+.stats section {
+  padding: 5px;
+}
+
+.stats svg {
+  padding: 2px;
+}
+
+.empty {
+  padding: 10px;
+  margin: 0 auto;
+  text-align: center;
+  background-color: #ffeb3b;
+  font-weight: bold;
+  font-size: 15px;
+  width: 300px;
+}
+
+.empty svg {
+  padding-right: 10px;
+}

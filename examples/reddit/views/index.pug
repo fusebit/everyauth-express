@@ -1,0 +1,39 @@
+html
+  head
+    title='Reddit Top upvoted comments'
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity='sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==' crossorigin='anonymous')
+  body
+    .header
+      .logo-container
+        img.logo(src='https://www.redditinc.com/assets/images/site/reddit-logo.png')
+        h1='Top Upvoted comments'
+      .profile_card
+          .banner(style=`background-image:url(${banner_img})`)
+          .user
+            img.avatar(src=snoovatar_img alt='Reddit profile image')
+            p=display_name_prefixed
+            span.karma #{total_karma}
+    .container
+      .top-comments
+        unless topComments.length
+          .empty 
+            i(class='fa-solid fa-face-frown fa-bounce')
+            span='No comments found'
+        each comment,index in topComments
+            .comment-item
+              .comment-title
+                .position=(index + 1)
+                h2!=comment.link_title
+              .stats 
+                section
+                  span
+                      i(class='fa-solid fa-star')
+                  span=comment.ups
+                  span
+                      i(class='fa-solid fa-comments')
+                  span=comment.subreddit.display_name
+                  a(href=comment.link_permalink target='_blank')='View comment'
+              .comment-body!=comment.body
+
