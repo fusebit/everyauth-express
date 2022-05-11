@@ -76,18 +76,18 @@ app.post('/incident', ensureSession, async (req, res) => {
   const creds = await everyauth.getIdentity('pagerduty', req.session.userId);
   const sdk = api({ token: creds.accessToken, tokenType: 'bearer' });
   const me = (await sdk.get('/users/me')).data.user;
-  
+
   const incident = await sdk.post('/incidents', {
     data: {
-      'incident': {
-        'type': 'incident',
-        'title': 'The server is on fire.',
-        'service': {
-          'id': req.query.service,
-          'type': 'service_reference'
-        }
-      }
-    }
+      incident: {
+        type: 'incident',
+        title: 'The server is on fire.',
+        service: {
+          id: req.query.service,
+          type: 'service_reference',
+        },
+      },
+    },
   });
 
   res.render('incident', {

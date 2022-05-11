@@ -97,7 +97,7 @@ svg.critical {
 }
 
 svg.warning {
-    color: #d8932d;
+  color: #d8932d;
 }
 
 .status-critical {
@@ -109,8 +109,8 @@ svg.warning {
 }
 
 .status-warning {
-    border-left: solid 5px #d8932d !important;
-  }
+  border-left: solid 5px #d8932d !important;
+}
 
 .footer button {
   background: #1155e6;
@@ -164,17 +164,15 @@ svg.warning {
   font-size: 18px;
 }
 
-
 .incident {
-    width: 400px;
-    margin: 0 auto;
-    background-color: #f3f3f3;
-    padding: 10px;
+  width: 400px;
+  margin: 0 auto;
+  background-color: #f3f3f3;
+  padding: 10px;
 }
 
 .success {
-    background-color: #139085;
-    padding: 10px;
-    color: #fff;
+  background-color: #139085;
+  padding: 10px;
+  color: #fff;
 }
-
