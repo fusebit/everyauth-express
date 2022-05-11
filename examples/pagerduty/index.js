@@ -9,7 +9,8 @@ const PORT = process.env.PORT || 3000;
 
 app.set('view engine', 'pug');
 
-const ensureSession = (req, res, next) => {
+// Get userId from the authorization redirect or via session if already authorized.
+const validateSession = (req, res, next) => {
   if (req.query.userId) {
     req.session.userId = req.query.userId;
   }
@@ -34,23 +35,37 @@ app.get('/', (req, res) => {
 app.use(
   '/authorize/:userId',
   everyauth.authorize('pagerduty', {
+    // The endpoint of your app where control will be returned afterwards
     finishedUrl: '/finished',
+    // The user ID of the authenticated user the credentials will be associated with
     mapToUserId: (req) => req.params.userId,
   })
 );
 
-app.get('/finished', ensureSession, async (req, res) => {
+/**
+ * Display the authorizing user PagerDuty service directory
+ */
+app.get('/finished', validateSession, async (req, res) => {
+  // Handle if any error occurs during the authorization flow.
   const { error } = req.query;
+
   if (error) {
     return res.render('index', {
       error,
     });
   }
 
+  // Get PagerDuty service credentials.
   const creds = await everyauth.getIdentity('pagerduty', req.session.userId);
   const sdk = api({ token: creds.accessToken, tokenType: 'bearer' });
+
+  // List service directory
   const services = (await sdk.get('/services')).resource;
+
+  // Get authorizing user PagerDuty profile information.
   const me = (await sdk.get('/users/me')).data.user;
+
+  // Display the data
   res.render('index', {
     title: 'Welcome to EveryAuth PagerDuty Demo App!',
     name: me.name,
@@ -59,8 +74,13 @@ app.get('/finished', ensureSession, async (req, res) => {
   });
 });
 
-app.post('/incident', ensureSession, async (req, res) => {
+/**
+ * Create a new incident for a specific service
+ */
+app.post('/incident', validateSession, async (req, res) => {
+  // Handle if any error occurs during the authorization flow.
   const { error, service } = req.query;
+
   if (error) {
     return res.render('index', {
       error,
@@ -73,8 +93,11 @@ app.post('/incident', ensureSession, async (req, res) => {
     });
   }
 
+  // Get PagerDuty service credentials.
   const creds = await everyauth.getIdentity('pagerduty', req.session.userId);
   const sdk = api({ token: creds.accessToken, tokenType: 'bearer' });
+
+  // Get authorizing user PagerDuty profile information.
   const me = (await sdk.get('/users/me')).data.user;
 
   const incident = await sdk.post('/incidents', {
@@ -90,6 +113,7 @@ app.post('/incident', ensureSession, async (req, res) => {
     },
   });
 
+  // Display the created incident
   res.render('incident', {
     title: 'Incident created',
     name: me.name,
