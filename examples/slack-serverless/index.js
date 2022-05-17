@@ -1,5 +1,5 @@
 const express = require('express');
-const serverless = require("serverless-http");
+const serverless = require('serverless-http');
 const { v4: uuidv4 } = require('uuid');
 const cookieSession = require('cookie-session');
 
@@ -51,7 +51,8 @@ app.use(
   everyauth.authorize('slack', {
     // The endpoint of your app where control will be returned afterwards
     finishedUrl: '/dev/finished',
-    hostedBaseUrl: (req) => `https://${req.requestContext.domainName}/${req.requestContext.stage}/authorize/${req.session.userId}`,
+    hostedBaseUrl: (req) =>
+      `https://${req.requestContext.domainName}/${req.requestContext.stage}/authorize/${req.session.userId}`,
     // The user ID of the authenticated user the credentials will be associated with
     mapToUserId: (req) => req.params.userId,
   })
