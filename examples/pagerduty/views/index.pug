@@ -1,0 +1,46 @@
+doctype html
+
+html
+  head
+    title='PagerDuty demo'
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==" crossorigin="anonymous")
+  body
+    .header
+      .logo
+        img.logo(src='https://pd-static-assets.pagerduty.com/logos/main.svg')
+      unless error
+        .profile
+          img.pic(src=avatar_url alt='PD Avatar')
+          p=name
+
+    .container
+        unless !error
+          .error 
+            h1='Oops got an error'
+            p=error
+        unless error
+          h2 Service Directory (#{services.length})
+          .services
+            each svc, index in services
+              div(class=`service-container status-${svc.status}`)
+                .service
+                  .status
+                    if svc.status === 'active'
+                      i(class="fa-solid fa-check active")
+                    if svc.status === 'critical'
+                      i(class="fa-solid fa-fire critical")
+                    if svc.status === 'warning'
+                      i(class="fa-solid fa-warning warning")
+                    span=svc.status
+                  .details
+                    a(href=svc.self) #{svc.name}
+                    p!=svc.description
+                .footer 
+                  form(action=`/incident?service=${svc.id}` method="post")
+                    button.send-button(action='submit')
+                      i(class="fa-solid fa-bounce fa-fire")
+                      span='This service is on fire!'
+                    
+                                  

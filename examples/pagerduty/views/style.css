@@ -1,0 +1,178 @@
+/* Global */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+}
+
+h2 {
+  margin: 10px;
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  height: 80px;
+  align-items: center;
+  justify-content: center;
+  background-color: #e3ecf6;
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1;
+  box-shadow: #8a8686 0px -1px 18px 10px;
+}
+
+.logo {
+  height: 40px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.container {
+  margin-top: 80px;
+  padding: 10px;
+}
+
+.logo-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+  flex-wrap: wrap;
+}
+
+.profile {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
+  flex-wrap: nowrap;
+  color: #2d2d2d;
+}
+
+.profile .pic {
+  height: 40px;
+  height: 40px;
+  width: 40px;
+  border-radius: 50%;
+  margin: auto auto 10px auto;
+  display: block;
+  box-shadow: 0px 3px 0 1px rgb(37 39 40 / 10%);
+  margin: 10px;
+  border: solid 1px #e2d7d0;
+  padding: 5px;
+}
+
+.error {
+  background-color: #e888a9;
+  padding: 10px;
+  color: #fff;
+  border-left: solid 10px #e91e63;
+}
+
+.services {
+  display: flex;
+  flex-direction: column;
+}
+
+.service {
+  background-color: #f3f3f3;
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+}
+
+svg.active {
+  color: #009688;
+}
+
+svg.critical {
+  color: #e91e63;
+}
+
+svg.warning {
+  color: #d8932d;
+}
+
+.status-critical {
+  border-left: solid 5px #e91e63 !important;
+}
+
+.status-active {
+  border-left: solid 5px #009688 !important;
+}
+
+.status-warning {
+  border-left: solid 5px #d8932d !important;
+}
+
+.footer button {
+  background: #1155e6;
+  border-radius: 5px;
+  box-shadow: 0 2px 1px 0 #e5e5e5;
+  padding: 14px;
+  font-size: 16px;
+  color: #fff;
+  border: 0;
+  cursor: pointer;
+}
+
+.footer button svg {
+  padding-right: 5px;
+  color: #ffeb3b;
+}
+
+.footer {
+  background-color: #e3e3e3;
+  padding: 10px;
+  border-radius: 0px 0px 10px 10px;
+}
+
+.status {
+  background-color: #fff;
+  box-shadow: 5px 4px 5px 2px #a29b9b;
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+  width: 100px;
+  margin-right: 10px;
+  margin-bottom: auto;
+}
+
+.status svg {
+  padding-right: 5px;
+}
+
+.service-container {
+  border: solid 1px;
+  margin: 10px;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.details {
+  padding: 10px;
+}
+
+.details a {
+  font-size: 18px;
+}
+
+.incident {
+  width: 400px;
+  margin: 0 auto;
+  background-color: #f3f3f3;
+  padding: 10px;
+}
+
+.success {
+  background-color: #139085;
+  padding: 10px;
+  color: #fff;
+}

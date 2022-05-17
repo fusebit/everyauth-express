@@ -1,0 +1,34 @@
+doctype html
+
+html
+  head
+    title='PagerDuty incident created'
+    style
+      include ./style.css
+    script(src='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/js/all.min.js' defer integrity="sha512-6PM0qYu5KExuNcKt5bURAoT6KCThUmHRewN3zUFNaoI6Di7XJPTMoT6K0nsagZKk2OB4L7E3q1uQKHNHd4stIQ==" crossorigin="anonymous")
+  body
+    .header
+      .logo
+        img.logo(src='https://pd-static-assets.pagerduty.com/logos/main.svg')
+      unless error
+        .profile
+          img.pic(src=avatar_url alt='PD Avatar')
+          p=name
+
+    .container
+        unless !error
+          .error 
+            h1='Oops got an error'
+            p=error
+        unless error 
+          .incident
+            h1.success='Incident created'
+            p=`Incident number:${incident.incident_number}`
+            h1=incident.title
+            p=`Created at ${incident.created_at}`
+            p=`Status: ${incident.status}`
+            p=`Urgency: ${incident.urgency}`
+            a(href=incident.html_url) #{incident.summary}
+            p='Service'
+            a(href=incident.service.html_url) #{incident.service.summary}
+                                  
