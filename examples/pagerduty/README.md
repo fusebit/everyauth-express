@@ -20,7 +20,7 @@ npm i
 
 Run the application
 
-```bash\
+```bash
 node .
 ```
 
