@@ -1,0 +1,117 @@
+/* Global */
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
+  background-color: #c3c9cf;
+}
+
+body,
+a {
+  color: #fff;
+}
+
+h1 span {
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 300;
+  line-height: 24px;
+}
+
+/* GitHub profile section */
+.profile {
+  background-color: #30363d;
+  text-align: center;
+  box-shadow: 0px 1px 7px 3px #707a85;
+  width: 400px;
+  margin: 20px auto;
+  border-radius: 10px;
+}
+
+.profile .pic {
+  height: 200px;
+  width: 200px;
+  border-radius: 50%;
+  margin: auto auto 10px auto;
+  display: block;
+  box-shadow: 0 0 0 1px rgba(240, 246, 252, 0.1);
+}
+
+/* Public repository listing section */
+.message {
+  background-color: #30363ced;
+  width: 60%;
+  margin-left: 41%;
+}
+
+.success {
+  background-color: #237d23;
+  padding: 10px;
+}
+
+.form-container {
+  border-top: solid 1px #707a85;
+  background-color: gray;
+  border-radius: 0 0 10px 10px;
+  padding-top: 10px;
+  margin-top: 20px;
+  min-height: 100px;
+}
+
+textarea {
+  width: 100%;
+  padding: 10px;
+}
+.send-button,
+.button {
+  background-color: #373737;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  margin: 5px;
+  border-radius: 50px;
+  box-shadow: 2px 3px 7px 0px #564d4d;
+}
+
+.button {
+  display: block;
+  text-decoration: none;
+  margin-bottom: 10px;
+}
+
+.send-button svg,
+.button svg,
+.success svg {
+  padding-right: 5px;
+}
+
+.hi-icon {
+  color: yellow;
+  font-size: 50px;
+}
+
+.send-me {
+  margin-top: 10px;
+  border-top: solid 1px #707a85;
+  padding-top: 10px;
+  font-size: 10px;
+}
+
+.pic-container {
+  padding-top: 10px;
+}
+
+a,
+button {
+  cursor: pointer;
+}
+
+.message-text {
+  background-color: #fff;
+  color: #707a85;
+  padding: 10px;
+}
