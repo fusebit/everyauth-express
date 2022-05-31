@@ -1,0 +1,17 @@
+org: fusebitdemo
+app: everyauth-slack-demo
+service: everyauth-slack-demo
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: us-west-1
+
+functions:
+  app:
+    handler: index.handler
+    events:
+      - http: ANY /
+      - http: "ANY /{proxy+}"
+    environment:
+      EVERYAUTH_TOKEN: ${env:EVERYAUTH_TOKEN}
